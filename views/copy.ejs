@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Create Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
+  <div class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <% include ../partials/header %>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 flex-grow">
+      <% if (message) { %>
+        <div
+          class="mb-6 p-4 text-center rounded-xl shadow-sm border-l-4 <%= message.includes('successfully') ? 'bg-green-50 text-green-700 border-green-400' : 'bg-red-50 text-red-700 border-red-400' %>">
+          <div class="flex items-center justify-center space-x-2">
+            <i class="fas <%= message.includes('successfully') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
+            <span class="font-medium">
+              <%= message %>
+            </span>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Create Order Form -->
+      <section class="mb-8">
+        <div class="mb-8">
+          <h2 class="text-4xl font-bold text-gray-800 mb-2">Create New Order</h2>
+          <p class="text-gray-600 text-lg">Add a new customer order with detailed information</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+          <div class="flex items-center mb-6">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl mr-4">
+              <i class="fas fa-edit text-white text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800">Order Details</h3>
+          </div>
+
+          <form action="/admin/create-order" method="POST" class="space-y-6" id="orderForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <!-- Order Selection -->
+              <div>
+                <label for="orderId" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-list mr-2 text-pink-500"></i>Select Order *
+                </label>
+                <select id="orderId" name="orderId" required
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                  <option value="" disabled selected>Select an Order to Update</option>
+                  <% orders.forEach(order => { %>
+                    <option value="<%= order._id %>">
+                      <%= order.customerName %> (<%= order.phone %>)
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <!-- Product Selection -->
+              <div>
+                <label for="productId" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-box mr-2 text-blue-500"></i>Product *
+                </label>
+                <select id="productId" name="productId" required
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                  <option value="" disabled selected>Select Product</option>
+                  <% products.forEach(p=> { %>
+                    <option value="<%= p._id %>" data-stock="<%= p.stock %>">
+                      <%= p.name %> (Stock: <%= p.stock %>)
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <!-- Available Stock -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-cubes mr-2 text-green-500"></i>Available Stock
+                </label>
+                <input type="text" id="availableStock" readonly
+                  class="w-full p-4 bg-gray-100 border border-gray-200 rounded-xl" value="—">
+              </div>
+
+              <!-- Customer Info -->
+              <div>
+                <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-user mr-2 text-blue-500"></i>Customer Name *
+                </label>
+                <input type="text" id="customerName" name="customerName" required
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter customer name">
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-envelope mr-2 text-green-500"></i>Email Address
+                </label>
+                <input type="email" id="email" name="email"
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter email address">
+              </div>
+              <div>
+                <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-phone mr-2 text-purple-500"></i>Phone Number *
+                </label>
+                <input type="tel" id="phone" name="phone" required
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter phone number">
+              </div>
+
+              <!-- Pick-up Method -->
+              <div>
+                <label for="pickupMethod" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-hand-holding-box mr-2 text-pink-500"></i>Pick-up Method *
+                </label>
+                <select id="pickupMethod" name="pickupMethod" required
+                  class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200">
+                  <option value="" disabled selected>Select pick-up method</option>
+                  <option value="delivery">Delivery</option>
+                  <option value="office">Pick from Office</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Delivery Fields -->
+            <div id="deliveryFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+              <div>
+                <label for="service" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-truck mr-2 text-teal-500"></i>Delivery Service
+                </label>
+                <select id="service" name="service"
+                  class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200">
+                  <option disabled selected>Choose the Delivery Service</option>
+                  <% ['TCS','M&P','Leopard','PT'].forEach(s=> { %>
+                    <option value="<%= s %>">
+                      <%= s %>
+                    </option>
+                  <% }); %>
+                </select>
+              </div>
+              <div>
+                <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>Address
+                </label>
+                <input type="text" id="address" name="address"
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter address">
+              </div>
+              <div>
+                <label for="postalCode" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-mail-bulk mr-2 text-indigo-500"></i>Postal Code
+                </label>
+                <input type="text" id="postalCode" name="postalCode"
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter postal code">
+              </div>
+              <div>
+                <label for="city" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-city mr-2 text-orange-500"></i>City
+                </label>
+                <input type="text" id="city" name="city"
+                  class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter city">
+              </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="pt-6">
+              <label for="quantity" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-sort-numeric-up mr-2 text-teal-500"></i>Quantity *
+              </label>
+              <input type="number" id="quantity" name="quantity" min="1" value="1" required
+                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-6">
+              <button type="submit"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <i class="fas fa-plus-circle mr-2"></i>
+                Update Order
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Existing order list, modals, scripts etc -->
+      <% include ../partials/order-list-and-modals %>
+    </main>
+
+    <% include ../partials/footer %>
+  </div>
+
+  <script src="/js/create-order.js"></script>
+</body>
+</html>

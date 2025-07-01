@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Product Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
+  <div class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white/20 p-3 rounded-xl">
+              <i class="fas fa-box-open text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                <% if (currentRoute==='product-management' ) { %>
+                  Product Management
+                <% } else if (currentRoute==='create-order' ) { %>
+                  Create Order
+                <% } else { %>
+                  Admin Panel
+                <% } %>
+              </h1>
+              <p class="text-blue-100 text-sm flex items-center mt-1">
+                <i class="fas fa-user-circle mr-2"></i>
+                Welcome, <%= user.email %>
+                <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                  <%= user.role %>
+                </span>
+              </p>
+            </div>
+          </div>
+          <a href="/logout"
+            class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="mt-6 flex space-x-1">
+          <a href="/admin"
+            class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+            <i class="fas fa-home"></i><span>Dashboard</span>
+          </a>
+
+          <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
+            <a href="/admin/orders"
+              class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-shopping-cart"></i><span>Orders</span>
+            </a>
+          <% } %>
+
+          <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
+            <a href="/admin/create-order"
+              class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-plus-circle"></i><span>Create Order</span>
+            </a>
+          <% } %>
+
+          <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+            <a href="/admin/employee-management"
+              class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-users"></i><span>Employee Management</span>
+            </a>
+          <% } %>
+
+          <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
+            <a href="/admin/tracking"
+              class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fa-solid fa-truck"></i><span>Track Product</span>
+            </a>
+          <% } %>
+
+          <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
+            <a href="/admin/product-management"
+              class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-boxes"></i><span>Product Management</span>
+            </a>
+          <% } %>
+
+          <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
+            <a href="/admin/finance"
+              class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-coins"></i><span>Finance</span>
+            </a>
+          <% } %>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-6 py-8 flex-grow">
+
+      <!-- Add Product -->
+      <section class="mb-12">
+        <h2 class="text-4xl font-bold text-gray-800 mb-4">Add New Product</h2>
+        <% if (message) { %>
+          <div class="mb-6 p-4 rounded-xl shadow-sm border-l-4 bg-red-50 text-red-700 border-red-400 flex items-center space-x-2">
+            <i class="fas fa-exclamation-circle"></i><span><%= message %></span>
+          </div>
+        <% } %>
+
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+          <form action="/admin/product-management" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Product Name *</label>
+              <input type="text" name="name" minlength="2" required
+                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="e.g. Sugar" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity *</label>
+              <input type="number" name="stock" min="0" step="1" required
+                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="e.g. 100" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Cost Price (Rs) *</label>
+              <input type="number" name="costPrice" min="0" step="0.01" required
+                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 transition"
+                placeholder="e.g. 80.00" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Selling Price (Rs) *</label>
+              <input type="number" name="price" min="0" step="0.01" required
+                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="e.g. 100.00" />
+            </div>
+            <div class="md:col-span-2">
+              <button type="submit"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl">
+                <i class="fas fa-plus-circle mr-2"></i>Add Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Product List with Alert -->
+      <section>
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-1">Product List</h2>
+            <p class="text-gray-600 text-lg">Your product inventory overview</p>
+          </div>
+          <% if (lowStockProducts && lowStockProducts.length > 0) { %>
+            <div class="flex items-center bg-red-100 text-red-700 px-4 py-2 rounded-xl shadow border border-red-300 animate-pulse">
+              <i class="fas fa-exclamation-triangle mr-2 text-xl"></i>
+              <span>Low stock on <%= lowStockProducts.length %> product(s)!</span>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase text-sm font-semibold">
+              <tr>
+                <th class="py-4 px-6 text-left">Name</th>
+                <th class="py-4 px-6 text-left">Stock</th>
+                <th class="py-4 px-6 text-left">Cost Price (Rs)</th>
+                <th class="py-4 px-6 text-left">Selling Price (Rs)</th>
+                <th class="py-4 px-6 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <% products.forEach((product, i) => { %>
+                <tr class="border-b border-gray-100 hover:bg-blue-50 <%= i % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+                  <td class="py-4 px-6 font-medium"><%= product.name %></td>
+                  <td class="py-4 px-6 flex items-center space-x-2">
+                    <%= product.stock %>
+                    <% if (product.stock < 10) { %>
+                      <i class="fas fa-exclamation-circle text-red-500" title="Low stock"></i>
+                    <% } %>
+                  </td>
+                  <td class="py-4 px-6">Rs <%= product.costPrice ? product.costPrice.toFixed(2) : '0.00' %></td>
+                  <td class="py-4 px-6">Rs <%= product.price ? product.price.toFixed(2) : '0.00' %></td>
+                  <td class="py-4 px-6 text-center space-x-4">
+                    <a href="/admin/products/edit/<%= product._id %>" class="text-yellow-500 hover:text-yellow-600"><i class="fas fa-edit"></i></a>
+                    <form action="/admin/products/delete/<%= product._id %>" method="POST" class="inline-block"
+                      onsubmit="return confirm('Delete this product?');">
+                      <button type="submit" class="text-red-500 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-6">
+      <div class="container mx-auto text-center">
+        <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+      </div>
+    </footer>
+  </div>
+</body>
+
+</html>

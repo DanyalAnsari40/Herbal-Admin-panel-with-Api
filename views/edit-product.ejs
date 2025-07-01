@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Product</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-10">
+  <div class="max-w-xl mx-auto bg-white p-8 shadow-md rounded-xl">
+    <h2 class="text-2xl font-bold mb-6 text-center">Edit Product</h2>
+    
+    <% if (message) { %>
+      <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+        <%= message %>
+      </div>
+    <% } %>
+    
+    <form action="/admin/products/edit/<%= product._id %>" method="POST" class="space-y-4">
+      <div>
+        <label class="block mb-1 font-semibold">Product Name</label>
+        <input type="text" name="name" value="<%= product.name %>" required class="w-full border rounded p-3" />
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Stock</label>
+        <input type="number" name="stock" value="<%= product.stock %>" required min="0" class="w-full border rounded p-3" />
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Cost Price</label>
+        <input type="number" name="costPrice" value="<%= product.costPrice %>" required min="0" step="0.01" class="w-full border rounded p-3" />
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Selling Price</label>
+        <input type="number" name="price" value="<%= product.price %>" required min="0" step="0.01" class="w-full border rounded p-3" />
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded font-semibold hover:bg-blue-700">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</body>
+</html>

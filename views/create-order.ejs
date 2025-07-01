@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Create Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
+  <div class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white/20 p-3 rounded-xl">
+              <i class="fas fa-plus-circle text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                Create Order</h1>
+              <p class="text-blue-100 text-sm flex items-center mt-1">
+                <i class="fas fa-user-circle mr-2"></i>
+                Welcome, <%= user.email %>
+                  <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                    <%= user.role %>
+                  </span>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/logout"
+              class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="mt-6 flex space-x-1">
+          <a href="/admin"
+            class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+          </a>
+
+          <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
+            <a href="/admin/orders"
+              class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Orders</span>
+            </a>
+            <% } %>
+
+              <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
+                <a href="/admin/create-order"
+                  class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                  <i class="fas fa-plus-circle"></i>
+                  <span>Create Order</span>
+                </a>
+                <% } %>
+
+                  <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+                    <a href="/admin/employee-management"
+                      class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                      <i class="fas fa-users"></i>
+                      <span>Employee Management</span>
+                    </a>
+                    <% } %>
+
+                      <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
+                        <a href="/admin/tracking"
+                          class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                          <i class="fa-solid fa-truck"></i>
+                          <span>Track Product</span>
+                        </a>
+                        <% } %>
+
+                          <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
+                            <a href="/admin/product-management"
+                              class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                              <i class="fas fa-boxes"></i>
+                              <span>Product Management</span>
+                            </a>
+                            <% } %>
+                              <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
+                                <a href="/admin/finance"
+                                  class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
+                                  <i class="fas fa-coins"></i>
+                                  <span>Finance</span>
+                                </a>
+                                <% } %>
+
+        </nav>
+
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 flex-grow">
+      <% if (message) { %>
+        <div
+          class="mb-6 p-4 text-center rounded-xl shadow-sm border-l-4 <%= message.includes('successfully') ? 'bg-green-50 text-green-700 border-green-400' : 'bg-red-50 text-red-700 border-red-400' %>">
+          <div class="flex items-center justify-center space-x-2">
+            <i class="fas <%= message.includes('successfully') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
+            <span class="font-medium">
+              <%= message %>
+            </span>
+          </div>
+        </div>
+        <% } %>
+
+          <!-- Create Order Form -->
+          <section class="mb-8">
+            <div class="mb-8">
+              <h2 class="text-4xl font-bold text-gray-800 mb-2">Create New Order</h2>
+              <p class="text-gray-600 text-lg">Add a new customer order with detailed information</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+              <div class="flex items-center mb-6">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl mr-4">
+                  <i class="fas fa-edit text-white text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-800">Order Details</h3>
+              </div>
+
+              <form action="/admin/create-order" method="POST" class="space-y-6" id="orderForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Product Selection -->
+                  <div>
+                    <label for="productId" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-box mr-2 text-blue-500"></i>Product *
+                    </label>
+                    <select id="productId" name="productId" required
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                      <option value="" disabled selected>Select Product</option>
+                      <% products.forEach(p=> { %>
+                        <option value="<%= p._id %>" data-stock="<%= p.stock %>">
+                          <%= p.name %> (Stock: <%= p.stock %>)
+                        </option>
+                        <% }) %>
+                    </select>
+                  </div>
+
+                  <!-- Available Stock -->
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-cubes mr-2 text-green-500"></i>Available Stock
+                    </label>
+                    <input type="text" id="availableStock" readonly
+                      class="w-full p-4 bg-gray-100 border border-gray-200 rounded-xl" value="—">
+                  </div>
+
+                  <!-- Customer Info -->
+                  <div>
+                    <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-user mr-2 text-blue-500"></i>Customer Name *
+                    </label>
+                    <input type="text" id="customerName" name="customerName" required
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter customer name">
+                  </div>
+                  <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-envelope mr-2 text-green-500"></i>Email Address
+                    </label>
+                    <input type="email" id="email" name="email"
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter email address">
+                  </div>
+                  <div>
+                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-phone mr-2 text-purple-500"></i>Phone Number *
+                    </label>
+                    <input type="tel" id="phone" name="phone" required
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter phone number">
+                  </div>
+
+                  <!-- Pick-up Method -->
+                  <div>
+                    <label for="pickupMethod" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-hand-holding-box mr-2 text-pink-500"></i>Pick-up Method *
+                    </label>
+                    <select id="pickupMethod" name="pickupMethod" required
+                      class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200">
+                      <option value="" disabled selected>Select pick-up method</option>
+                      <option value="delivery">Delivery</option>
+                      <option value="office">Pick from Office</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Delivery Fields -->
+                <div id="deliveryFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                  <div>
+                    <label for="service" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-truck mr-2 text-teal-500"></i>Delivery Service
+                    </label>
+                    <select id="service" name="service"
+                      class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200">
+                      <option disabled selected>Choose the Delivery Service</option>
+                      <% ['TCS','M&P','Leopard','PT'].forEach(s=> { %>
+                        <option value="<%= s %>">
+                          <%= s %>
+                        </option>
+                        <% }); %>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>Address
+                    </label>
+                    <input type="text" id="address" name="address"
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter address">
+                  </div>
+
+                  <div>
+                    <label for="postalCode" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-mail-bulk mr-2 text-indigo-500"></i>Postal Code
+                    </label>
+                    <input type="text" id="postalCode" name="postalCode"
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter postal code">
+                  </div>
+
+                  <div>
+                    <label for="city" class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-city mr-2 text-orange-500"></i>City
+                    </label>
+                    <input type="text" id="city" name="city"
+                      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      placeholder="Enter city">
+                  </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="pt-6">
+                  <label for="quantity" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-sort-numeric-up mr-2 text-teal-500"></i>Quantity *
+                  </label>
+                  <input type="number" id="quantity" name="quantity" min="1" value="1" required
+                    class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-6">
+                  <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Create Order
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          </section>
+
+          <!-- Order List -->
+          <section>
+            <div class="mb-8">
+              <h2 class="text-3xl font-bold text-gray-800 mb-2">Custom Order List</h2>
+              <p class="text-gray-600 text-lg">View all orders created through the admin panel</p>
+            </div>
+         <!-- Filter + Search + Date -->
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
+
+  <!-- Search -->
+  <form method="GET" action="/admin/create-order" class="w-full md:w-1/2 flex space-x-3">
+    <div class="relative w-full">
+      <input type="text" name="search" value="<%= search || '' %>" placeholder="🔍 Search by name or phone..."
+        class="w-full p-4 pl-12 border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+      <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+    </div>
+    <% if (search || selectedService || start || end) { %>
+      <a href="/admin/create-order"
+        class="flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-700 rounded-xl shadow hover:bg-blue-200 transition">
+        <i class="fas fa-times mr-2"></i> Clear
+      </a>
+    <% } %>
+  </form>
+
+  <!-- Service & Date Filter -->
+  <form method="GET" action="/admin/create-order"
+    class="flex flex-wrap items-center space-x-3 bg-white p-3 rounded-xl shadow border">
+    <label class="text-gray-700 font-semibold flex items-center space-x-1">
+      <i class="fas fa-filter text-blue-600"></i><span>Service:</span>
+    </label>
+    <div class="relative">
+      <select name="service" onchange="this.form.submit()"
+        class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow hover:border-blue-400 cursor-pointer">
+        <option value="">All</option>
+        <option value="TCS" <%= selectedService==='TCS' ? 'selected' : '' %>>TCS</option>
+        <option value="M&P" <%= selectedService==='M&P' ? 'selected' : '' %>>M&P</option>
+        <option value="Leopard" <%= selectedService==='Leopard' ? 'selected' : '' %>>Leopard</option>
+        <option value="PT" <%= selectedService==='PT' ? 'selected' : '' %>>PT</option>
+      </select>
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+        <i class="fas fa-chevron-down"></i>
+      </div>
+    </div>
+
+    <!-- Date Range -->
+    <input type="date" name="start" value="<%= start || '' %>"
+      class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow transition ml-3" />
+    <span class="mx-1 text-gray-500">to</span>
+    <input type="date" name="end" value="<%= end || '' %>"
+      class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow transition" />
+    <button type="submit"
+      class="ml-3 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow hover:from-blue-700 hover:to-indigo-700 transition">
+      <i class="fas fa-filter mr-2"></i>Apply
+    </button>
+  </form>
+
+</div>
+
+
+
+            <% if (orders.length===0) { %>
+              <div class="bg-white p-12 rounded-2xl shadow-lg border border-gray-100 text-center">
+                <div class="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-clipboard-list text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Custom Orders Yet</h3>
+                <p class="text-gray-500">Orders created through this form will appear here</p>
+              </div>
+              <% } else { %>
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                  <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-xl font-semibold text-gray-800">
+                        <i class="fas fa-list mr-2 text-blue-500"></i>
+                        Custom Orders (<%= orders.length %>)
+                      </h3>
+                      <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <i class="fas fa-clock"></i>
+                        <span>Last updated: <%= new Date().toLocaleString() %></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr
+                          class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase text-sm font-semibold">
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-user mr-2"></i>Customer
+                          </th>
+                          <!-- <th class="py-4 px-6 text-left">
+                            <i class="fas fa-envelope mr-2"></i>Email
+                          </th> -->
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-phone mr-2"></i>Phone
+                          </th>
+                          <!-- <th class="py-4 px-6 text-left">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Address
+                          </th> -->
+                          <!-- <th class="py-4 px-6 text-left">
+                            <i class="fas fa-mail-bulk mr-2"></i>Postal Code
+                          </th> -->
+                          <!-- <th class="py-4 px-6 text-left">
+                            <i class="fas fa-calendar mr-2"></i>Created
+                          </th> -->
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-city mr-2"></i>City
+                          </th>
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-sort-numeric-up mr-2"></i>Quantity
+                          </th>
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-box mr-2"></i>Product
+                          </th>
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-truck mr-2"></i>Service
+
+                            <!--!  -->
+                          <th class="py-4 px-6 text-left"><i class="fas fa-barcode mr-2"></i>Tracking ID</th>
+
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-shipping-fast"></i>track
+                          </th>
+                          <th class="py-4 px-6 text-left"><i class="fas fa-info-circle mr-2"></i>More</th>
+                          </th>
+                          <th class="py-4 px-6 text-left">
+                            <i class="fas fa-wrench mr-2"></i>Actions
+                          </th>
+                          <!--!  -->
+                        </tr>
+
+                      </thead>
+                      <tbody class="text-gray-700">
+                        <% orders.forEach((order, index)=> { %>
+                          <tr
+                            class="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-200 <%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+                            <td class="py-4 px-6 font-medium">
+                              <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                  <i class="fas fa-user text-blue-600 text-sm"></i>
+                                </div>
+                                <%= order.customerName %>
+                              </div>
+                            </td>
+                            <!-- <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-envelope text-green-500 mr-2"></i>
+                                <%= order.email || '-' %>
+                              </div>
+                            </td> -->
+                            <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-phone text-purple-500 mr-2"></i>
+                                <%= order.phone %>
+                              </div>
+                            </td>
+                            <!-- <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                <%= order.address || '-' %>
+                              </div>
+                            </td> -->
+                            <!-- <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-mail-bulk text-indigo-500 mr-2"></i>
+                                <%= order.postalCode || '-' %>
+                              </div> -->
+                            <!-- <td class="py-4 px-6 text-sm text-gray-500">
+                                <div class="flex items-center">
+                                  <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                                  <%= new Date(order.createdAt).toLocaleDateString() %>
+                                </div>
+                              </td> -->
+                            </td>
+                            <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-city text-orange-500 mr-2"></i>
+                                <%= order.city || '-' %>
+                              </div>
+                            </td>
+                            <td class="py-4 px-6">
+                              <div class="flex items-center">
+                                <i class="fas fa-sort-numeric-up text-teal-500 mr-2"></i>
+                                <%= order.quantity %>
+                              </div>
+                            </td>
+
+                            <td class="py-4 px-6 font-medium">
+                              <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                  <i class="fas fa-box"></i>
+                                </div>
+                                <%= order.product?.name || 'N/A' %>
+                              </div>
+                            </td>
+
+                            <td class="py-4 px-6 font-medium">
+                              <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                  <i class="fa-solid fa-truck"></i>
+                                </div>
+                                <%= order.service %>
+                              </div>
+                            </td>
+
+                            <!--!  -->
+                            <td class="py-4 px-6">
+                              <% if (order.pickupMethod==='office' ) { %>
+                                <span class="text-gray-500">—</span>
+                                <% } else if (!order.trackingId) { %>
+                                  <button class="text-blue-600 underline"
+                                    onclick="openTrackingModal('<%= order._id %>')">Add ID</button>
+                                  <% } else { %>
+                                    <span class="text-gray-700">Original ID: <%= order.trackingId %></span>
+                                    <% } %>
+                            </td>
+
+                            <td class="py-4 px-6">
+                              <% if (order.pickupMethod==='office' ) { %>
+                                <span class="text-gray-500">—</span>
+                                <% } else { %>
+                                  <a href="/admin/tracking?p_id=<%= order.trackingId || '' %>&service=<%= order.service || '' %>"
+                                    class="text-green-600 hover:underline flex items-center space-x-1">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Track</span>
+                                  </a>
+                                  <% } %>
+                            </td>
+
+
+                            <td class="py-4 px-6">
+                              <button class="text-indigo-600 hover:underline"
+                                data-order='<%- JSON.stringify(order).replace(/' /g, "&#39;" ) %>'
+                                onclick="showMoreDetails(this)">
+                                See More
+                              </button>
+                            </td>
+
+                            <!--!  -->
+                            <td class="py-4 px-6 text-center">
+                              <form action="/admin/create-order/delete/<%= order._id %>" method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this order?');">
+                                <button type="submit" class="text-red-600 hover:text-red-800">
+                                  <i class="fas fa-trash-alt"></i>
+                                </button>
+                              </form>
+                            </td>
+
+                          </tr>
+                          <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-center items-center space-x-1">
+                  <% if (currentPage> 1) { %>
+                    <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&service=<%= selectedService %>"
+                      class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition">Previous</a>
+                    <% } %>
+
+                      <% let startPage=Math.max(1, currentPage - 2); let endPage=Math.min(totalPages, currentPage + 2);
+                        if (startPage> 1) { %>
+                        <a href="?page=1&search=<%= search %>&service=<%= selectedService %>"
+                          class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">1</a>
+                        <% if (startPage> 2) { %><span class="px-2">...</span>
+                          <% } %>
+                            <% } for (let i=startPage; i <=endPage; i++) { %>
+                              <a href="?page=<%= i %>&search=<%= search %>&service=<%= selectedService %>"
+                                class="px-3 py-1 rounded-full <%= i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>">
+                                <%= i %>
+                              </a>
+                              <% } if (endPage < totalPages) { %>
+                                <% if (endPage < totalPages - 1) { %><span class="px-2">...</span>
+                                  <% } %>
+                                    <a href="?page=<%= totalPages %>&search=<%= search %>&service=<%= selectedService %>"
+                                      class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+                                      <%= totalPages %>
+                                    </a>
+                                    <% } %>
+
+                                      <% if (currentPage < totalPages) { %>
+                                        <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&service=<%= selectedService %>"
+                                          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition">Next</a>
+                                        <% } %>
+                </div>
+                <% } %>
+          </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-6 mt-12">
+      <div class="container mx-auto px-6 text-center">
+        <div class="flex items-center justify-center space-x-4 mb-2">
+          <i class="fas fa-shield-alt text-blue-400"></i>
+          <span class="font-semibold text-white">Admin Panel</span>
+          <i class="fas fa-shield-alt text-blue-400"></i>
+        </div>
+        <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+      </div>
+    </footer>
+  </div>
+  <!--!  -->
+  <!-- TRACKING ID MODAL -->
+  <div id="trackingIdModal"
+    class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl w-full max-w-md shadow-lg p-6 relative">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Enter Tracking ID</h2>
+      <input type="text" id="trackingInputField" class="w-full p-3 border border-gray-300 rounded-xl mb-4"
+        placeholder="Enter Tracking ID">
+      <div class="flex justify-end gap-4">
+        <button onclick="closeTrackingModal()"
+          class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300">Cancel</button>
+        <button onclick="saveTrackingId()"
+          class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEE MORE DETAILS MODAL -->
+  <!-- SEE MORE DETAILS MODAL -->
+  <div id="seeMoreModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+    <div id="seeMoreContent"
+      class="bg-white rounded-xl w-full max-w-lg shadow-xl transform scale-95 opacity-0 transition-all duration-300">
+      <!-- Modal header -->
+      <div
+        class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl px-6 py-4 flex justify-between items-center">
+        <h2 class="text-xl font-bold"><i class="fas fa-info-circle mr-2"></i>Order Details</h2>
+        <button onclick="closeSeeMoreModal()" class="text-white hover:text-gray-200 transition">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="p-6">
+        <ul id="detailsList" class="space-y-3 text-gray-700 text-sm"></ul>
+      </div>
+
+      <!-- Modal footer -->
+
+    </div>
+  </div>
+
+
+  <!--!  -->
+  <script>
+    // Product selection and stock management
+    const prodSelect = document.getElementById('productId');
+    const stockField = document.getElementById('availableStock');
+    const qtyInput = document.getElementById('quantity');
+
+    if (prodSelect) {
+      prodSelect.addEventListener('change', () => {
+        const opt = prodSelect.selectedOptions[0];
+        const st = opt.dataset.stock;
+        stockField.value = st || '—';
+        qtyInput.max = st || '';
+        if (qtyInput.value > st) qtyInput.value = st || 1;
+      });
+    }
+
+    // Delivery vs Office pickup validation
+    const pickupMethodSelect = document.getElementById('pickupMethod');
+    const deliveryFields = document.getElementById('deliveryFields');
+    const serviceSelect = document.getElementById('service');
+    const addressInput = document.getElementById('address');
+    const postalCodeInput = document.getElementById('postalCode');
+    const cityInput = document.getElementById('city');
+
+    function updateDeliveryFields() {
+      if (pickupMethodSelect.value === 'delivery') {
+        deliveryFields.style.display = 'grid';
+        serviceSelect.required = true;
+        addressInput.required = true;
+        postalCodeInput.required = true;
+        cityInput.required = true;
+        serviceSelect.disabled = false;
+        addressInput.disabled = false;
+        postalCodeInput.disabled = false;
+        cityInput.disabled = false;
+      } else {
+        deliveryFields.style.display = 'none';
+        serviceSelect.required = false;
+        addressInput.required = false;
+        postalCodeInput.required = false;
+        cityInput.required = false;
+        serviceSelect.value = '';
+        addressInput.value = '';
+        postalCodeInput.value = '';
+        cityInput.value = '';
+        serviceSelect.disabled = true;
+        addressInput.disabled = true;
+        postalCodeInput.disabled = true;
+        cityInput.disabled = true;
+      }
+    }
+    if (pickupMethodSelect) {
+      pickupMethodSelect.addEventListener('change', updateDeliveryFields);
+      updateDeliveryFields();
+    }
+
+    // ------------------------
+    let currentOrderId = null;
+
+    function openTrackingModal(orderId) {
+      currentOrderId = orderId;
+      document.getElementById('trackingIdModal').classList.remove('hidden');
+    }
+
+    function closeTrackingModal() {
+      document.getElementById('trackingIdModal').classList.add('hidden');
+      currentOrderId = null;
+      document.getElementById('trackingInputField').value = '';
+    }
+
+    async function saveTrackingId() {
+      const trackingId = document.getElementById('trackingInputField').value.trim();
+      if (!trackingId || !currentOrderId) return alert('Please enter a valid Tracking ID');
+
+      try {
+        const res = await fetch('/admin/create-order/update-tracking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: currentOrderId, trackingId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        } else {
+          alert(data.message || 'Error updating tracking ID');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to update tracking ID');
+      }
+    }
+
+    // ------------------------
+    function showMoreDetails(btn) {
+      const order = JSON.parse(btn.getAttribute('data-order'));
+      const detailsList = document.getElementById('detailsList');
+
+      detailsList.innerHTML = `
+      <li class="py-2 flex items-start"><i class="fas fa-envelope mr-2 text-blue-500"></i><strong>Name:</strong> <span class="ml-1">${order.customerName || '-'}</span></li>
+      <li class="py-2 flex items-start"><i class="fas fa-envelope mr-2 text-blue-500"></i><strong>Email:</strong> <span class="ml-1">${order.email || '-'}</span></li>
+      <li class="py-2 flex items-start"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i><strong>Address:</strong> <span class="ml-1">${order.address || '-'}</span></li>
+      <li class="py-2 flex items-start"><i class="fas fa-mail-bulk mr-2 text-indigo-500"></i><strong>Postal Code:</strong> <span class="ml-1">${order.postalCode || '-'}</span></li>
+      <li class="py-2 flex items-start"><i class="fas fa-city mr-2 text-orange-500"></i><strong>City:</strong> <span class="ml-1">${order.city || '-'}</span></li>
+      <li class="py-2 flex items-start"><i class="fas fa-calendar-alt mr-2 text-gray-500"></i><strong>Created At:</strong> <span class="ml-1">${new Date(order.createdAt).toLocaleString()}</span></li>
+    `;
+
+      const modal = document.getElementById('seeMoreModal');
+      const content = document.getElementById('seeMoreContent');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+      }, 20);
+    }
+
+    function closeSeeMoreModal() {
+      const content = document.getElementById('seeMoreContent');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        document.getElementById('seeMoreModal').classList.add('hidden');
+      }, 300);
+    }
+  </script>
+
+
+</body>
+
+</html>

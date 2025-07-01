@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track Product</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- <link rel="stylesheet" href="/public/style.css" /> -->
+    <link rel="stylesheet" href="/css/style.css" />
+    <!--  -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!--  -->
+
+    <script type="module" src="/js/script.js" defer></script>
+</head>
+
+<body>
+    <nav class="navbar">
+
+        <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-white/20 p-3 rounded-xl">
+                            <i class="fas fa-users text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1
+                                class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                                Track Products</h1>
+                            <p class="text-blue-100 text-sm flex items-center mt-1">
+                                <i class="fas fa-user-circle mr-2"></i>
+                                Welcome, <%= user.email %>
+                                    <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                                        <%= user.role %>
+                                    </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/logout"
+                            class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="mt-6 flex space-x-1">
+                    <a href="/admin"
+                        class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
+                        <a href="/admin/orders"
+                            class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Orders</span>
+                        </a>
+                        <% } %>
+                            <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
+                                <a href="/admin/create-order"
+                                    class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Create Order</span>
+                                </a>
+                                <% } %>
+                                    <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+                                        <a href="/admin/employee-management"
+                                            class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                            <i class="fas fa-users"></i>
+                                            <span>Employee Management</span>
+                                        </a>
+                                        <% } %>
+                                            <!--! updated by Danyal -->
+
+                                            <% if (user.role==='admin' ||
+                                                user.permissions.includes('employee-management')) { %>
+                                                <a href="/admin/tracking"
+                                                    class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                                    <i class="fa-solid fa-truck"></i>
+                                                    <span>Track Product</span>
+                                                </a>
+                                                <% } %>
+                                                    <a href="/admin/product-management"
+                                                        class="<% if (currentRoute==='product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                                        <i class="fas fa-box"></i><span>Product Management</span>
+                                                    </a>
+                                                    <% if (user.role==='admin' ) { %>
+                                                        <a href="/admin/finance"
+                                                            class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                                            <i class="fas fa-coins"></i>
+                                                            <span>Finance</span>
+                                                        </a>
+                                                        <% } %>
+
+                                                            <!--! -->
+                </nav>
+            </div>
+        </header>
+    </nav>
+
+    <section class="track-product-heading container">
+        <h1 class="heading">TrackProduct</h1>
+        <p class="para">Enter your details to view real-time tracking information</p>
+    </section>
+
+    <main class="container">
+        <div class="track-form">
+            <!-- Select the service type to locate the product -->
+            <div class="form-group floating">
+                <select id="service" name="service" required>
+                    <option disabled selected>Choose the Delivery Service</option>
+                    <option value="TCS">TCS</option>
+                    <option value="M&P">M&P</option>
+                    <option value="LEOPARDS">LEOPARDS</option>
+                    <option value="PAK-POST">PAK-POST</option>
+                    <!-- <option value="Leopard">Leopard</option>
+                    <option value="PT">PT</option> -->
+                </select>
+                <label for="service">Service Type</label>
+                <!-- <i class="fas fa-truck"></i> -->
+            </div>
+
+            <!--usrname  -->
+            <!-- <div class="form-group floating">
+                <input type="text" id="username" required />
+                <label for="username">Username</label>
+                <i class="fas fa-user"></i>
+            </div> -->
+
+            <!--! passowrd -->
+            <!-- <div class="form-group floating">
+                <input type="password" id="password" required />
+                <label for="password">Password</label>
+                <i class="fas fa-lock"></i>
+            </div> -->
+            <!--! ID -->
+            <div class="form-group floating">
+                <input type="text" id="p_id" required />
+                <label for="P_id">Product-ID</label>
+                <i class="fas fa-barcode"></i>
+            </div>
+            <button type="submit" class="btn-track">
+                <span class="btn-text">Track Package</span>
+                <span class="btn-icon"><i class="fas fa-search-location"></i></span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal Popup -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Package Tracking Details</h2>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent">
+                    <!-- Will dynamically contain either iframe OR tracking details -->
+                    <div class="tracking-header" id="trackingHeader"></div>
+                    <div class="timeline" id="timeline"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

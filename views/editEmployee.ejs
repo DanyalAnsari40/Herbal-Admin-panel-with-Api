@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Employee</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white/20 p-3 rounded-xl">
+              <i class="fas fa-user-edit text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Edit Employee</h1>
+              <p class="text-blue-100 text-sm flex items-center mt-1">
+                <i class="fas fa-user-circle mr-2"></i>
+                Welcome, <%= user.email %> 
+                <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium"><%= user.role %></span>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/logout" class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="mt-6 flex space-x-1">
+          <a href="/admin" class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+          </a>
+          <% if (user.role === 'admin' || user.permissions.includes('orders')) { %>
+            <a href="/admin/orders" class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Orders</span>
+            </a>
+          <% } %>
+          <% if (user.role === 'admin' || user.permissions.includes('create-order')) { %>
+            <a href="/admin/create-order" class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+              <i class="fas fa-plus-circle"></i>
+              <span>Create Order</span>
+            </a>
+          <% } %>
+          <% if (user.role === 'admin' || user.permissions.includes('employee-management')) { %>
+            <a href="/admin/employee-management" class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+              <i class="fas fa-users"></i>
+              <span>Employee Management</span>
+            </a>
+          <% } %>
+
+          
+  <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+    <a href="/admin/employee-management" class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+      <i class="fas fa-users"></i>
+      <span>Employee Management</span>
+    </a>
+  <% } %>
+
+  <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
+    <a href="/admin/tracking" class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+      <i class="fa-solid fa-truck"></i>
+      <span>Track Product</span>
+    </a>
+  <% } %>
+
+  <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
+    <a href="/admin/product-management" class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+      <i class="fas fa-boxes"></i>
+      <span>Product Management</span>
+    </a>
+  <% } %>
+
+ <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
+  <a href="/admin/finance" class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
+    <i class="fas fa-coins"></i>
+    <span>Finance</span>
+  </a>
+<% } %>
+
+
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 flex-grow">
+      <div class="max-w-2xl mx-auto">
+        <div class="mb-8">
+          <h2 class="text-4xl font-bold text-gray-800 mb-2">Edit Employee</h2>
+          <p class="text-gray-600 text-lg">Update employee information and permissions</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+          <div class="flex items-center mb-6">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-3 rounded-xl mr-4">
+              <i class="fas fa-user-edit text-white text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800">Employee Details</h3>
+          </div>
+          
+          <% if (message) { %>
+            <div class="mb-6 p-4 text-center rounded-xl shadow-sm border-l-4 bg-red-50 text-red-700 border-red-400">
+              <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-exclamation-circle"></i>
+                <span class="font-medium"><%= message %></span>
+              </div>
+            </div>
+          <% } %>
+          
+          <form action="/admin/employees/edit/<%= employee._id %>" method="POST" class="space-y-6">
+            <div>
+              <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-envelope mr-2 text-blue-500"></i>Email Address *
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                value="<%= employee.email %>" 
+                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                placeholder="Enter employee email"
+                required
+              >
+            </div>
+            
+            <div>
+              <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-lock mr-2 text-red-500"></i>Password
+              </label>
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                placeholder="Leave blank to keep unchanged"
+              >
+              <p class="text-sm text-gray-500 mt-1">
+                <i class="fas fa-info-circle mr-1"></i>
+                Leave blank to keep the current password unchanged
+              </p>
+            </div>
+            
+            <div>
+              <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-user-tag mr-2 text-purple-500"></i>Role *
+              </label>
+              <select 
+                id="role" 
+                name="role" 
+                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                required 
+                onchange="updatePermissions()"
+              >
+                <option value="staff" <%= employee.role === 'staff' ? 'selected' : '' %>>Staff</option>
+                <option value="manager" <%= employee.role === 'manager' ? 'selected' : '' %>>Manager</option>
+                <option value="admin" <%= employee.role === 'admin' ? 'selected' : '' %>>Admin</option>
+              </select>
+            </div>
+            
+           <div id="permissions-section" class="space-y-3">
+  <label class="block text-sm font-semibold text-gray-700 mb-2">
+    <i class="fas fa-key mr-2 text-green-500"></i>Permissions
+  </label>
+  <div class="space-y-3">
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="orders" 
+        name="permissions" 
+        value="orders" 
+        <%= employee.permissions.includes('orders') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="orders" class="text-sm text-gray-700 font-medium">Orders Page</label>
+    </div>
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="create-order" 
+        name="permissions" 
+        value="create-order" 
+        <%= employee.permissions.includes('create-order') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="create-order" class="text-sm text-gray-700 font-medium">Create Order Page</label>
+    </div>
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="employee-management" 
+        name="permissions" 
+        value="employee-management" 
+        <%= employee.permissions.includes('employee-management') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="employee-management" class="text-sm text-gray-700 font-medium">Employee Management</label>
+    </div>
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="track-product" 
+        name="permissions" 
+        value="track-product" 
+        <%= employee.permissions.includes('track-product') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="track-product" class="text-sm text-gray-700 font-medium">Track Product</label>
+    </div>
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="product-management" 
+        name="permissions" 
+        value="product-management" 
+        <%= employee.permissions.includes('product-management') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="product-management" class="text-sm text-gray-700 font-medium">Product Management</label>
+    </div>
+    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+      <input 
+        type="checkbox" 
+        id="finance" 
+        name="permissions" 
+        value="finance" 
+        <%= employee.permissions.includes('finance') ? 'checked' : '' %> 
+        class="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      >
+      <label for="finance" class="text-sm text-gray-700 font-medium">Finance</label>
+    </div>
+  </div>
+</div>
+
+            
+            <div class="flex space-x-4 pt-6">
+              <button 
+                type="submit" 
+                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <i class="fas fa-save mr-2"></i>
+                Update Employee
+              </button>
+              <a 
+                href="/admin/employee-management" 
+                class="flex-1 bg-gray-300 text-gray-700 p-4 rounded-xl font-semibold hover:bg-gray-400 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-center flex items-center justify-center"
+              >
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-6 mt-12">
+      <div class="container mx-auto px-6 text-center">
+        <div class="flex items-center justify-center space-x-4 mb-2">
+          <i class="fas fa-shield-alt text-blue-400"></i>
+          <span class="font-semibold text-white">Admin Panel</span>
+          <i class="fas fa-shield-alt text-blue-400"></i>
+        </div>
+        <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+      </div>
+    </footer>
+  </div>
+  
+<script>
+  function updatePermissions() {
+    const role = document.getElementById('role').value;
+    const permissionsSection = document.getElementById('permissions-section');
+    const checkboxes = [
+      document.getElementById('orders'),
+      document.getElementById('create-order'),
+      document.getElementById('employee-management'),
+      document.getElementById('track-product'),
+      document.getElementById('product-management'),
+      document.getElementById('finance')
+    ];
+
+    if (role === 'admin') {
+      permissionsSection.style.display = 'none';
+      checkboxes.forEach(cb => {
+        cb.checked = true;
+        cb.disabled = true;
+      });
+    } else {
+      permissionsSection.style.display = 'block';
+      checkboxes.forEach(cb => cb.disabled = false);
+      if (role === 'staff') {
+        document.getElementById('employee-management').checked = false;
+        document.getElementById('employee-management').disabled = true;
+      }
+    }
+  }
+  document.addEventListener('DOMContentLoaded', updatePermissions);
+</script>
+
+</body>
+</html>
