@@ -10,91 +10,203 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
+<body class="bg-gradient-to-br from-slate-50 to-green-50 font-sans">
   <div class="min-h-screen flex flex-col">
 
     
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
-      <div class="container mx-auto px-6 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-4">
-            <div class="bg-white/20 p-3 rounded-xl">
-              <i class="fas fa-shopping-cart text-2xl"></i>
-            </div>
-            <div>
-              <h1 class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                Orders Management</h1>
-              <p class="text-blue-100 text-sm flex items-center mt-1">
-                <i class="fas fa-user-circle mr-2"></i>
-                Welcome, <%= user.email %>
-                  <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
-                    <%= user.role %>
-                  </span>
-              </p>
-            </div>
+   <% if (user.role==='admin' ) { %>
+    <div class="min-h-screen flex">
+      <!-- Sidebar -->
+      <aside id="sidebar"
+        class="w-64 transition-all duration-300 bg-gradient-to-b from-green-700 to-indigo-800 text-white flex flex-col p-6 space-y-6">
+        <div class="flex flex-col items-center space-y-3">
+          <div
+            class="profile-pic-container w-24 h-24 rounded-full overflow-hidden border-2 border-white transition-all duration-300">
+            <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
+              class="w-full h-full object-cover">
           </div>
-          <div class="flex items-center space-x-4">
-            <a href="/logout"
-              class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </a>
+          <div class="text-center sidebar-text transition-all duration-300">
+            <p class="text-lg font-semibold">
+              <%= user.displayName || 'Name not set' %>
+            </p>
+            <p class="text-sm text-green-100">
+              <%= user.email %>
+            </p>
+            <span class="mt-1 inline-block bg-white/20 rounded-full px-3 py-1 text-xs font-medium">
+              <%= user.role %>
+            </span>
           </div>
         </div>
 
-        <!-- Navigation -->
-        <nav class="mt-6 flex space-x-1">
+        <nav class="flex flex-col space-y-2">
           <a href="/admin"
-            class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
+            class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'admin' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+            <i class="fas fa-home w-5 mr-3"></i> <span class="sidebar-text">Dashboard</span>
           </a>
-          <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
-            <a href="/admin/orders"
-              class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-              <i class="fas fa-shopping-cart"></i>
-              <span>Orders</span>
+          <% if (user.permissions.includes('employee-management')) { %>
+            <a href="/admin/employee-management"
+              class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'employee-management' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+              <i class="fas fa-users w-5 mr-3"></i> <span class="sidebar-text">Employees</span>
             </a>
             <% } %>
-              <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
-                <a href="/admin/create-order"
-                  class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-                  <i class="fas fa-plus-circle"></i>
-                  <span>Create Order</span>
+              <% if (user.permissions.includes('finance')) { %>
+                <a href="/admin/finance"
+                  class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'finance' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+                  <i class="fas fa-coins w-5 mr-3"></i> <span class="sidebar-text">Finance</span>
                 </a>
                 <% } %>
-                  <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
-                    <a href="/admin/employee-management"
-                      class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-                      <i class="fas fa-users"></i>
-                      <span>Employee Management</span>
-                    </a>
-                    <% } %>
-                      <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
-                        <a href="/admin/tracking"
-                          class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-                          <i class="fa-solid fa-truck"></i>
-                          <span>Track Product</span>
-                        </a>
-                        <% } %>
-                          <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
-                            <a href="/admin/product-management"
-                              class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-                              <i class="fas fa-boxes"></i>
-                              <span>Product Management</span>
-                            </a>
-                            <% } %>
-                              <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
-                                <a href="/admin/finance"
-                                  class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
-                                  <i class="fas fa-coins"></i>
-                                  <span>Finance</span>
-                                </a>
-                                <% } %>
         </nav>
-      </div>
-    </header>
+      </aside>
+
+
+      <div class="flex-1 flex flex-col">
+        <!-- Header with toggle -->
+        <header class="bg-gradient-to-r from-green-600 via-green-700 to-indigo-700 text-white shadow-lg">
+          <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+              <!-- Toggle Button -->
+              <button onclick="toggleSidebar()" class="text-white hover:text-green-200 text-2xl transition">
+                <i class="fas fa-bars"></i>
+              </button>
+
+              <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+              <nav class="flex space-x-4 items-center">
+                <% if (user.permissions.includes('orders')) { %>
+                  <a href="/admin/orders"
+                    class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'orders' ? 'bg-white/20 font-semibold underline' : '' %>">
+                    <i class="fas fa-shopping-cart w-4"></i><span>Orders</span>
+                  </a>
+                  <% } %>
+                    <% if (user.permissions.includes('create-order')) { %>
+                      <a href="/admin/create-order"
+                        class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'create-order' ? 'bg-white/20 font-semibold underline' : '' %>">
+                        <i class="fas fa-plus-circle w-4"></i><span>Create Order</span>
+                      </a>
+                      <% } %>
+                        <% if (user.permissions.includes('track-product')) { %>
+                          <a href="/admin/tracking"
+                            class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'tracking' ? 'bg-white/20 font-semibold underline' : '' %>">
+                            <i class="fa-solid fa-truck w-4"></i><span>Tracking</span>
+                          </a>
+                          <% } %>
+                            <% if (user.permissions.includes('product-management')) { %>
+                              <a href="/admin/product-management"
+                                class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'product-management' ? 'bg-white/20 font-semibold underline' : '' %>">
+                                <i class="fas fa-boxes w-4"></i><span>Products</span>
+                              </a>
+                              <% } %>
+              </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+              <button onclick="document.getElementById('profileModal').classList.remove('hidden')"
+                class="text-white hover:text-green-200 text-xl transition">
+                <i class="fas fa-cog"></i>
+              </button>
+              <a href="/logout"
+                class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+              </a>
+            </div>
+          </div>
+        </header>
+        <% } else { %>
+          <!-- Employee header with special style -->
+          <header class="bg-gradient-to-r from-green-600 via-green-700 to-indigo-700 text-white shadow-lg">
+            <div class="container mx-auto px-6 py-4">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                  <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white">
+                    <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
+                      class="w-full h-full object-cover">
+                  </div>
+                  <div>
+                    <h1
+                      class="text-3xl font-bold bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+                      Dashboard</h1>
+                    <p class="text-green-100 text-sm flex items-center mt-1">
+                      <i class="fas fa-user-circle mr-2"></i>
+                      Welcome, <%= user.email %>
+                        <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                          <%= user.role %>
+                        </span>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                  <button onclick="document.getElementById('profileModal').classList.remove('hidden')"
+                    class="text-white hover:text-green-200 text-xl transition">
+                    <i class="fas fa-cog"></i>
+                  </button>
+                  <a href="/logout"
+                    class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+
+              </div>
+
+              <!-- Navigation -->
+              <nav class="mt-6 flex space-x-1">
+                <a href="/admin"
+                  class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                  <i class="fas fa-home"></i>
+                  <span>Dashboard</span>
+                </a>
+
+                <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
+                  <a href="/admin/orders"
+                    class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                  </a>
+                  <% } %>
+
+                    <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
+                      <a href="/admin/create-order"
+                        class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Order</span>
+                      </a>
+                      <% } %>
+
+                        <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+                          <a href="/admin/employee-management"
+                            class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                            <i class="fas fa-users"></i>
+                            <span>Employee Management</span>
+                          </a>
+                          <% } %>
+
+                            <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
+                              <a href="/admin/tracking"
+                                class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                <i class="fa-solid fa-truck"></i>
+                                <span>Track Product</span>
+                              </a>
+                              <% } %>
+
+                                <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
+                                  <a href="/admin/product-management"
+                                    class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-boxes"></i>
+                                    <span>Product Management</span>
+                                  </a>
+                                  <% } %>
+                                    <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
+                                      <a href="/admin/finance"
+                                        class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-green-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
+                                        <i class="fas fa-coins"></i>
+                                        <span>Finance</span>
+                                      </a>
+                                      <% } %>
+
+              </nav>
+
+            </div>
+          </header>
+
+          <% } %>
 
     <!-- Main Content -->
 <main class="container mx-auto px-6 py-8 flex-grow">
@@ -116,7 +228,7 @@
       <!-- Search -->
       <div class="relative w-full md:w-auto flex-grow">
         <input type="text" name="search" value="<%= search || '' %>" placeholder="🔍 Search by name or phone..."
-          class="w-full p-2 pl-10 border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+          class="w-full p-2 pl-10 border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-green-400 transition">
         <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
       </div>
 
@@ -124,13 +236,13 @@
       <div class="relative">
         <input type="date" name="date" value="<%= selectedDate || '' %>"
           onchange="this.form.submit()"
-          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow hover:border-blue-400 cursor-pointer">
+          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 shadow hover:border-green-400 cursor-pointer">
       </div>
 
       <!-- Call Status -->
       <div class="relative">
         <select name="status" onchange="this.form.submit()"
-          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow hover:border-blue-400 cursor-pointer">
+          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 shadow hover:border-green-400 cursor-pointer">
           <option value="">Call Status: All</option>
           <option value="Answered" <%= selectedStatus==='Answered' ? 'selected' : '' %>>Answered</option>
           <option value="Declined" <%= selectedStatus==='Declined' ? 'selected' : '' %>>Declined</option>
@@ -144,7 +256,7 @@
       <!-- Handle Status -->
       <div class="relative">
         <select name="handle" onchange="this.form.submit()"
-          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow hover:border-blue-400 cursor-pointer">
+          class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 shadow hover:border-green-400 cursor-pointer">
           <option value="">Handle: All</option>
           <option value="Unhandled" <%= selectedHandle==='Unhandled' ? 'selected' : '' %>>Unhandled</option>
           <option value="Handled" <%= selectedHandle==='Handled' ? 'selected' : '' %>>Handled</option>
@@ -156,7 +268,7 @@
 
       <% if (search || selectedDate || selectedStatus || selectedHandle) { %>
         <a href="/admin/orders"
-          class="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded-xl shadow hover:bg-blue-200 transition">
+          class="flex items-center justify-center px-3 py-2 bg-green-100 text-green-700 rounded-xl shadow hover:bg-green-200 transition">
           <i class="fas fa-times mr-2"></i> Clear
         </a>
       <% } %>
@@ -205,7 +317,7 @@
                     <div class="flex items-center space-x-2">
                       <i class="fas fa-quote-left text-yellow-500"></i>
                       <span><%= order.review || "No review yet" %></span>
-                      <button type="button" @click="edit = true" class="text-blue-600 hover:text-blue-800 ml-2">
+                      <button type="button" @click="edit = true" class="text-green-600 hover:text-green-800 ml-2">
                         <i class="fas fa-pen"></i>
                       </button>
                     </div>
@@ -213,8 +325,8 @@
                   <template x-if="edit">
                     <form action="/admin/orders/add-review" method="POST" class="flex space-x-2">
                       <input type="hidden" name="orderId" value="<%= order._id %>">
-                      <input type="text" name="review" value="<%= order.review || '' %>" class="border px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-                      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Save</button>
+                      <input type="text" name="review" value="<%= order.review || '' %>" class="border px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-300">
+                      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Save</button>
                       <button type="button" @click="edit = false" class="text-red-500 hover:text-red-700">
                         <i class="fas fa-times"></i>
                       </button>
@@ -285,7 +397,7 @@
     <div class="mt-6 flex justify-center items-center space-x-1">
       <% if (currentPage > 1) { %>
         <a href="?page=<%= currentPage - 1 %>&status=<%= selectedStatus %>&handle=<%= selectedHandle %>"
-          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition">Previous</a>
+          class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow transition">Previous</a>
       <% } %>
       <% let startPage = Math.max(1, currentPage - 2); let endPage = Math.min(totalPages, currentPage + 2);
         if (startPage > 1) { %>
@@ -295,7 +407,7 @@
       <% }
         for (let i = startPage; i <= endPage; i++) { %>
         <a href="?page=<%= i %>&status=<%= selectedStatus %>&handle=<%= selectedHandle %>"
-          class="px-3 py-1 rounded-full <%= i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>"><%= i %></a>
+          class="px-3 py-1 rounded-full <%= i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>"><%= i %></a>
       <% }
         if (endPage < totalPages) { %>
         <% if (endPage < totalPages - 1) { %><span class="px-2">...</span><% } %>
@@ -304,7 +416,7 @@
       <% } %>
       <% if (currentPage < totalPages) { %>
         <a href="?page=<%= currentPage + 1 %>&status=<%= selectedStatus %>&handle=<%= selectedHandle %>"
-          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition">Next</a>
+          class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow transition">Next</a>
       <% } %>
     </div>
   <% } %>
@@ -316,14 +428,36 @@
     <footer class="bg-gray-900 text-gray-300 py-6 mt-12">
       <div class="container mx-auto px-6 text-center">
         <div class="flex items-center justify-center space-x-4 mb-2">
-          <i class="fas fa-shield-alt text-blue-400"></i>
+          <i class="fas fa-shield-alt text-green-400"></i>
           <span class="font-semibold text-white">Admin Panel</span>
-          <i class="fas fa-shield-alt text-blue-400"></i>
+          <i class="fas fa-shield-alt text-green-400"></i>
         </div>
         <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
       </div>
     </footer>
   </div>
+  <script>
+    
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const texts = sidebar.querySelectorAll('.sidebar-text');
+  const profilePic = sidebar.querySelector('.profile-pic-container');
+
+  sidebar.classList.toggle('w-64');
+  sidebar.classList.toggle('w-20');
+
+  texts.forEach(el => el.classList.toggle('hidden'));
+
+  profilePic.classList.toggle('w-24');
+  profilePic.classList.toggle('h-24');
+  profilePic.classList.toggle('w-12');
+  profilePic.classList.toggle('h-12');
+
+  // also adjust p-6 vs p-2 padding on sidebar
+  sidebar.classList.toggle('p-6');
+  sidebar.classList.toggle('p-2');
+}
+  </script>
 </body>
 
 </html>

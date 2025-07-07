@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
   <script>
     tailwind.config = {
       theme: {
@@ -26,251 +26,418 @@
   </script>
 </head>
 
-<body class="bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
-  <div class="min-h-screen flex flex-col">
- <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
-  <div class="container mx-auto px-6 py-4">
-    <div class="flex justify-between items-center">
-     <div class="flex items-center space-x-4">
-  <!-- Square profile pic -->
-<div class="w-20 h-20 rounded-full overflow-hidden border-2 border-white">
+<body class="bg-gradient-to-br from-slate-50 to-green-50 font-sans">
 
-  <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
-         class="w-full h-full object-cover rounded-none"> <!-- square, no rounded -->
-  </div>
-  <div>
-    <div class="flex items-center space-x-2">
-      <i class="fas fa-user-circle text-blue-100"></i>
-      <span class="text-blue-100 text-sm">Welcome, <%= user.email %></span>
-      <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium text-white">
-        <%= user.role %>
-      </span>
-    </div>
-    <% if (user.displayName) { %>
-    <div class="mt-1 text-blue-200 text-sm font-semibold flex items-center space-x-1">
-      <i class="fas fa-id-badge"></i>
-      <span><%= user.displayName %></span>
-    </div>
-    <% } else { %>
-    <div class="mt-1 text-blue-300 text-xs italic flex items-center space-x-1">
-      <i class="fas fa-id-badge"></i>
-      <span>Name not set</span>
-    </div>
-    <% } %>
-  </div>
-</div>
-
-      <!-- Right: Settings + Logout -->
-      <div class="flex items-center space-x-4">
-        <button onclick="document.getElementById('profileModal').classList.remove('hidden')"
-          class="text-white hover:text-blue-200 text-xl transition">
-          <i class="fas fa-cog"></i>
-        </button>
-        <a href="/logout"
-          class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="mt-6 flex space-x-1">
-      <a href="/admin" class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fas fa-home"></i>
-        <span>Dashboard</span>
-      </a>
-      <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
-      <a href="/admin/orders" class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Orders</span>
-      </a>
-      <% } %>
-      <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
-      <a href="/admin/create-order" class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fas fa-plus-circle"></i>
-        <span>Create Order</span>
-      </a>
-      <% } %>
-      <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
-      <a href="/admin/employee-management" class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fas fa-users"></i>
-        <span>Employee Management</span>
-      </a>
-      <% } %>
-      <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
-      <a href="/admin/tracking" class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fa-solid fa-truck"></i>
-        <span>Track Product</span>
-      </a>
-      <% } %>
-      <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
-      <a href="/admin/product-management" class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-blue-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
-        <i class="fas fa-boxes"></i>
-        <span>Product Management</span>
-      </a>
-      <% } %>
-      <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
-      <a href="/admin/finance" class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-blue-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
-        <i class="fas fa-coins"></i>
-        <span>Finance</span>
-      </a>
-      <% } %>
-    </nav>
-  </div>
-</header>
-
- <!-- Profile Modal -->
-<div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Profile</h2>
-    <div class="flex items-center space-x-4 mb-4">
-      <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile" class="w-16 h-16 rounded-full object-cover border">
-      <div>
-        <p class="font-semibold text-lg"><%= user.displayName %></p>
-        <p class="text-gray-600 text-sm"><%= user.email %></p>
-      </div>
-    </div>
-    <div class="flex justify-end space-x-2">
-      <button onclick="document.getElementById('editProfileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('hidden');"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Edit Profile</button>
-      <button onclick="document.getElementById('profileModal').classList.add('hidden')"
-        class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Profile Modal -->
-<div id="editProfileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Edit Profile</h2>
-    <form method="POST" action="/admin/profile" enctype="multipart/form-data">
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-1">Name</label>
-        <input type="text" name="displayName" value="<%= user.displayName || '' %>" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-1">Profile Picture</label>
-        <input type="file" name="profilePic" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="flex justify-end space-x-2">
-        <button type="button"
-          onclick="document.getElementById('editProfileModal').classList.add('hidden')"
-          class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
-        <button type="submit"
-          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Save</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-  <!-- Main Content -->
-    <main class="container mx-auto px-6 py-8 flex-grow">
-      <% if (message) { %>
-        <div
-          class="mb-6 p-4 text-center rounded-xl shadow-sm border-l-4 <%= message.includes('successfully') ? 'bg-green-50 text-green-700 border-green-400' : 'bg-red-50 text-red-700 border-red-400' %>">
-          <div class="flex items-center justify-center space-x-2">
-            <i class="fas <%= message.includes('successfully') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
-            <span class="font-medium">
-              <%= message %>
+  <% if (user.role==='admin' ) { %>
+    <div class="min-h-screen flex">
+      <!-- Sidebar -->
+      <aside id="sidebar"
+        class="w-64 transition-all duration-300 bg-gradient-to-b from-green-700 to-indigo-800 text-white flex flex-col p-6 space-y-6">
+        <div class="flex flex-col items-center space-y-3">
+          <div
+            class="profile-pic-container w-24 h-24 rounded-full overflow-hidden border-2 border-white transition-all duration-300">
+            <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
+              class="w-full h-full object-cover">
+          </div>
+          <div class="text-center sidebar-text transition-all duration-300">
+            <p class="text-lg font-semibold">
+              <%= user.displayName || 'Name not set' %>
+            </p>
+            <p class="text-sm text-green-100">
+              <%= user.email %>
+            </p>
+            <span class="mt-1 inline-block bg-white/20 rounded-full px-3 py-1 text-xs font-medium">
+              <%= user.role %>
             </span>
           </div>
         </div>
-        <% } %>
 
-          <!-- Dashboard Content -->
-          <section>
-            <div class="mb-8">
-              <h2 class="text-4xl font-bold text-gray-800 mb-2">Welcome to the Admin Dashboard</h2>
-              <p class="text-gray-600 text-lg">Manage your business operations efficiently</p>
+        <nav class="flex flex-col space-y-2">
+          <a href="/admin"
+            class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'admin' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+            <i class="fas fa-home w-5 mr-3"></i> <span class="sidebar-text">Dashboard</span>
+          </a>
+          <% if (user.permissions.includes('employee-management')) { %>
+            <a href="/admin/employee-management"
+              class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'employee-management' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+              <i class="fas fa-users w-5 mr-3"></i> <span class="sidebar-text">Employees</span>
+            </a>
+            <% } %>
+              <% if (user.permissions.includes('finance')) { %>
+                <a href="/admin/finance"
+                  class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'finance' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+                  <i class="fas fa-coins w-5 mr-3"></i> <span class="sidebar-text">Finance</span>
+                </a>
+                <% } %>
+        </nav>
+      </aside>
+
+
+      <div class="flex-1 flex flex-col">
+        <!-- Header with toggle -->
+        <header class="bg-gradient-to-r from-green-600 via-green-700 to-indigo-700 text-white shadow-lg">
+          <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+              <!-- Toggle Button -->
+              <button onclick="toggleSidebar()" class="text-white hover:text-green-200 text-2xl transition">
+                <i class="fas fa-bars"></i>
+              </button>
+
+              <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+              <nav class="flex space-x-4 items-center">
+                <% if (user.permissions.includes('orders')) { %>
+                  <a href="/admin/orders"
+                    class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'orders' ? 'bg-white/20 font-semibold underline' : '' %>">
+                    <i class="fas fa-shopping-cart w-4"></i><span>Orders</span>
+                  </a>
+                  <% } %>
+                    <% if (user.permissions.includes('create-order')) { %>
+                      <a href="/admin/create-order"
+                        class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'create-order' ? 'bg-white/20 font-semibold underline' : '' %>">
+                        <i class="fas fa-plus-circle w-4"></i><span>Create Order</span>
+                      </a>
+                      <% } %>
+                        <% if (user.permissions.includes('track-product')) { %>
+                          <a href="/admin/tracking"
+                            class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'tracking' ? 'bg-white/20 font-semibold underline' : '' %>">
+                            <i class="fa-solid fa-truck w-4"></i><span>Tracking</span>
+                          </a>
+                          <% } %>
+                            <% if (user.permissions.includes('product-management')) { %>
+                              <a href="/admin/product-management"
+                                class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'product-management' ? 'bg-white/20 font-semibold underline' : '' %>">
+                                <i class="fas fa-boxes w-4"></i><span>Products</span>
+                              </a>
+                              <% } %>
+              </nav>
             </div>
-
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div
-                class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl">
-                    <i class="fas fa-shopping-bag text-white text-2xl"></i>
+            <div class="flex items-center space-x-4">
+              <button onclick="document.getElementById('profileModal').classList.remove('hidden')"
+                class="text-white hover:text-green-200 text-xl transition">
+                <i class="fas fa-cog"></i>
+              </button>
+              <a href="/logout"
+                class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+              </a>
+            </div>
+          </div>
+        </header>
+        <% } else { %>
+          <!-- Employee header with special style -->
+          <header class="bg-gradient-to-r from-green-600 via-green-700 to-indigo-700 text-white shadow-lg">
+            <div class="container mx-auto px-6 py-4">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                  <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white">
+                    <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
+                      class="w-full h-full object-cover">
                   </div>
-                  <div class="text-right">
-                    <p class="text-3xl font-bold text-gray-800">
-                      <%= orderCount %>
+                  <div>
+                    <h1
+                      class="text-3xl font-bold bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+                      Dashboard</h1>
+                    <p class="text-green-100 text-sm flex items-center mt-1">
+                      <i class="fas fa-user-circle mr-2"></i>
+                      Welcome, <%= user.email %>
+                        <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                          <%= user.role %>
+                        </span>
                     </p>
-                    <p class="text-sm text-gray-500">Total Orders</p>
                   </div>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Orders Overview</h3>
-                <p class="text-gray-600 mb-4">Track and manage all your business orders in one place</p>
+                <div class="flex items-center space-x-4">
+                  <button onclick="document.getElementById('profileModal').classList.remove('hidden')"
+                    class="text-white hover:text-green-200 text-xl transition">
+                    <i class="fas fa-cog"></i>
+                  </button>
+                  <a href="/logout"
+                    class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+
+              </div>
+
+              <!-- Navigation -->
+              <nav class="mt-6 flex space-x-1">
+                <a href="/admin"
+                  class="<% if (currentRoute === 'admin') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                  <i class="fas fa-home"></i>
+                  <span>Dashboard</span>
+                </a>
+
                 <% if (user.role==='admin' || user.permissions.includes('orders')) { %>
                   <a href="/admin/orders"
-                    class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                    <i class="fas fa-eye"></i>
-                    <span>View Orders</span>
+                    class="<% if (currentRoute === 'orders') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
                   </a>
                   <% } %>
-              </div>
 
-              <div
-                class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl">
-                    <i class="fas fa-users text-white text-2xl"></i>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-3xl font-bold text-gray-800">
-                      <%= employeeCount %>
+                    <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
+                      <a href="/admin/create-order"
+                        class="<% if (currentRoute === 'create-order') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Order</span>
+                      </a>
+                      <% } %>
+
+                        <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
+                          <a href="/admin/employee-management"
+                            class="<% if (currentRoute === 'employee-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                            <i class="fas fa-users"></i>
+                            <span>Employee Management</span>
+                          </a>
+                          <% } %>
+
+                            <% if (user.role==='admin' || user.permissions.includes('track-product')) { %>
+                              <a href="/admin/tracking"
+                                class="<% if (currentRoute === 'tracking') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                <i class="fa-solid fa-truck"></i>
+                                <span>Track Product</span>
+                              </a>
+                              <% } %>
+
+                                <% if (user.role==='admin' || user.permissions.includes('product-management')) { %>
+                                  <a href="/admin/product-management"
+                                    class="<% if (currentRoute === 'product-management') { %>bg-white/20 text-white border-b-2 border-white<% } else { %>text-green-100 hover:text-white hover:bg-white/10<% } %> px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-boxes"></i>
+                                    <span>Product Management</span>
+                                  </a>
+                                  <% } %>
+                                    <% if (user.role==='admin' || user.permissions.includes('finance')) { %>
+                                      <a href="/admin/finance"
+                                        class="<%= currentRoute === 'finance' ? 'bg-white/20 text-white border-b-2 border-white' : 'text-green-100 hover:text-white hover:bg-white/10' %> px-4 py-2 rounded-lg flex items-center space-x-2">
+                                        <i class="fas fa-coins"></i>
+                                        <span>Finance</span>
+                                      </a>
+                                      <% } %>
+
+              </nav>
+
+            </div>
+          </header>
+
+          <% } %>
+
+
+            <!-- Profile Modal -->
+            <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Profile</h2>
+                <div class="flex items-center space-x-4 mb-4">
+                  <img src="/uploads/<%= user.profilePic || 'default-profile.png' %>" alt="Profile"
+                    class="w-16 h-16 rounded-full object-cover border">
+                  <div>
+                    <p class="font-semibold text-lg">
+                      <%= user.displayName %>
                     </p>
-                    <p class="text-sm text-gray-500">Total Employees</p>
+                    <p class="text-gray-600 text-sm">
+                      <%= user.email %>
+                    </p>
                   </div>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Employee Overview</h3>
-                <p class="text-gray-600 mb-4">Manage your team and employee information efficiently</p>
-                <% if (user.role==='admin' || user.permissions.includes('employee-management')) { %>
-                  <a href="/admin/employee-management"
-                    class="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                    <i class="fas fa-cog"></i>
-                    <span>Manage Employees</span>
-                  </a>
-                  <% } %>
+                <div class="flex justify-end space-x-2">
+                  <button
+                    onclick="document.getElementById('editProfileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('hidden');"
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Edit
+                    Profile</button>
+                  <button onclick="document.getElementById('profileModal').classList.add('hidden')"
+                    class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Close</button>
+                </div>
               </div>
             </div>
 
-            <!-- Quick Actions -->
-            <% if (user.role==='admin' || user.permissions.includes('create-order')) { %>
-              <div class="bg-gradient-to-r from-purple-500 to-indigo-600 p-8 rounded-2xl shadow-lg text-white">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="text-2xl font-bold mb-2">Quick Actions</h3>
-                    <p class="text-purple-100 mb-6">Create a new order or manage existing ones with just a few clicks
-                    </p>
-                    <a href="/admin/create-order"
-                      class="inline-flex items-center space-x-2 bg-white text-purple-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 font-semibold shadow-md hover:shadow-lg">
-                      <i class="fas fa-plus"></i>
-                      <span>Create New Order</span>
-                    </a>
+            <!-- Edit Profile Modal -->
+            <div id="editProfileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Edit Profile</h2>
+                <form method="POST" action="/admin/profile" enctype="multipart/form-data">
+                  <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-1">Name</label>
+                    <input type="text" name="displayName" value="<%= user.displayName || '' %>"
+                      class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
                   </div>
-                  <div class="hidden md:block">
-                    <i class="fas fa-rocket text-6xl text-white/20"></i>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-1">Profile Picture</label>
+                    <input type="file" name="profilePic"
+                      class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
                   </div>
-                </div>
+                  <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="document.getElementById('editProfileModal').classList.add('hidden')"
+                      class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
+                    <button type="submit"
+                      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Save</button>
+                  </div>
+                </form>
               </div>
-              <% } %>
-          </section>
-    </main>
+            </div>
 
-    <!-- Footer unchanged -->
-    <footer class="bg-gray-900 text-gray-300 py-6 mt-12">
-      <div class="container mx-auto px-6 text-center">
-        <div class="flex items-center justify-center space-x-4 mb-2">
-          <i class="fas fa-shield-alt text-blue-400"></i>
-          <span class="font-semibold text-white">Admin Panel</span>
-          <i class="fas fa-shield-alt text-blue-400"></i>
-        </div>
-        <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+<!-- Main Content -->
+<main class="container mx-auto px-6 py-8 flex-grow">
+  <% if (message) { %>
+    <div class="mb-6 p-4 text-center rounded-xl shadow-sm border-l-4 
+      <%= message.includes('successfully') ? 'bg-green-50 text-green-700 border-green-400' : 'bg-red-50 text-red-700 border-red-400' %>">
+      <div class="flex items-center justify-center space-x-2">
+        <i class="fas <%= message.includes('successfully') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
+        <span class="font-medium"><%= message %></span>
       </div>
-    </footer>
-  </div>
+    </div>
+  <% } %>
+
+  <% if (user.role !== 'admin') { %>
+    <div class="flex flex-col items-center justify-center h-96 text-center">
+      <i class="fas fa-lock text-5xl text-gray-400 mb-4"></i>
+      <h2 class="text-3xl font-bold text-gray-700 mb-2">Access Denied</h2>
+      <p class="text-gray-500 text-lg">You do not have permission to view this dashboard.</p>
+    </div>
+  <% } else { %>
+    <section>
+      <div class="mb-8">
+        <h2 class="text-4xl font-bold text-gray-800 mb-2">Welcome to the Admin Dashboard</h2>
+        <p class="text-gray-600 text-lg">Manage your business operations efficiently</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-green-100 to-green-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-green-500 p-3 rounded-full text-white">
+              <i class="fas fa-clipboard-list text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-green-800 mb-1"><%= orderCount %></p>
+          <p class="text-sm text-green-700 font-semibold">Total Orders (Inquiries)</p>
+        </div>
+
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-yellow-100 to-yellow-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-yellow-500 p-3 rounded-full text-white">
+              <i class="fas fa-hourglass-half text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-yellow-800 mb-1"><%= pendingOrderCount %></p>
+          <p class="text-sm text-yellow-700 font-semibold">Pending Calls</p>
+        </div>
+
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-blue-100 to-blue-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-blue-500 p-3 rounded-full text-white">
+              <i class="fas fa-box text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-blue-800 mb-1"><%= createOrderCount %></p>
+          <p class="text-sm text-blue-700 font-semibold">Orders Created</p>
+        </div>
+
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-purple-100 to-purple-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-purple-500 p-3 rounded-full text-white">
+              <i class="fas fa-users text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-purple-800 mb-1"><%= employeeCount %></p>
+          <p class="text-sm text-purple-700 font-semibold">Employees</p>
+        </div>
+      </div>
+
+      <!-- Finance Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-green-100 to-green-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-green-500 p-3 rounded-full text-white">
+              <i class="fas fa-coins text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-green-800 mb-1">Rs. <%= totalRevenue.toFixed(2) %></p>
+          <p class="text-sm text-green-700 font-semibold">Total Sales</p>
+        </div>
+
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-red-100 to-red-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-red-500 p-3 rounded-full text-white">
+              <i class="fas fa-hand-holding-usd text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-red-800 mb-1">Rs. <%= totalCost.toFixed(2) %></p>
+          <p class="text-sm text-red-700 font-semibold">Total Cost</p>
+        </div>
+
+        <div class="p-6 rounded-2xl shadow-lg border bg-gradient-to-br from-yellow-100 to-yellow-50 text-center">
+          <div class="flex justify-center mb-3">
+            <div class="bg-yellow-500 p-3 rounded-full text-white">
+              <i class="fas fa-chart-line text-xl"></i>
+            </div>
+          </div>
+          <p class="text-3xl font-extrabold text-yellow-800 mb-1">Rs. <%= profit.toFixed(2) %></p>
+          <p class="text-sm text-yellow-700 font-semibold">Total Profit</p>
+        </div>
+      </div>
+
+      <!-- Stock Table -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 overflow-x-auto">
+        <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center">
+          <i class="fas fa-box-open mr-3 text-green-500"></i>Current Stock Overview
+        </h3>
+        <table class="min-w-full text-sm">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase font-semibold">
+            <tr>
+              <th class="py-4 px-6 text-left">Product Name</th>
+              <th class="py-4 px-6 text-left">Stock Quantity</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+            <% products.forEach((product, i) => { %>
+              <tr class="border-b border-gray-100 hover:bg-green-50 <%= i % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+                <td class="py-4 px-6"><%= product.name %></td>
+                <td class="py-4 px-6 font-semibold text-green-700"><%= product.stock %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% } %>
+</main>
+
+            <!-- Footer -->
+            <footer class="bg-gray-900 text-gray-300 py-6 mt-12">
+              <div class="container mx-auto px-6 text-center">
+                <div class="flex items-center justify-center space-x-4 mb-2">
+                  <i class="fas fa-shield-alt text-green-400"></i>
+                  <span class="font-semibold text-white">Admin Panel</span>
+                  <i class="fas fa-shield-alt text-green-400"></i>
+                </div>
+                <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+              </div>
+            </footer>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const texts = sidebar.querySelectorAll('.sidebar-text');
+        const profilePic = sidebar.querySelector('.profile-pic-container');
+
+        sidebar.classList.toggle('w-64');
+        sidebar.classList.toggle('w-20');
+
+        texts.forEach(el => el.classList.toggle('hidden'));
+
+        profilePic.classList.toggle('w-24');
+        profilePic.classList.toggle('h-24');
+        profilePic.classList.toggle('w-12');
+        profilePic.classList.toggle('h-12');
+
+        // also adjust p-6 vs p-2 padding on sidebar
+        sidebar.classList.toggle('p-6');
+        sidebar.classList.toggle('p-2');
+      }
+    </script>
+
 </body>
 
 </html>

@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config()
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -23,7 +24,7 @@ app.use(session({
 }));
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://danyalansari3269:tpuOhptgZ2KLx4KX@cluster0.ivplyhe.mongodb.net').then(() => console.log('MongoDB connected'))
+mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Order Schema
@@ -97,9 +98,7 @@ const hasPermission = (permission) => (req, res, next) => {
 
 // Routes
 //!!!!!!!! added by danyal
-// app.get('/track', (req, res) => {
-//   res.render('tracking');  // no folder needed since it's directly in /views
-// });
+// admin/tracking
 app.get('/admin/tracking', isAuthenticated, hasPermission('employee-management'), (req, res) => {
   res.render('tracking', {
     user: req.session.user,
@@ -157,35 +156,77 @@ app.post('/order', async (req, res) => {
       return res.render('index', { message: 'Name and phone are required' });
     }
     await LandingOrder.create({ name, phone }); // use the simple schema
-    res.render('index', { message: 'Order placed successfully!' });
+    res.render('index', { message: 'آرڈ درج ہوگیا ہے' });
   } catch (err) {
     console.error(err);
-    res.render('index', { message: 'Failed to create order' });
+    res.render('index', { message: 'آرڈ درج نہیں ہوا ' });
   }
 });
+
+//Admin page/dashbord 
 // Admin Dashboard
+// 🚀 Admin Dashboard
 app.get('/admin', isAuthenticated, async (req, res) => {
   try {
-    const orderCount = await Order.countDocuments();
+    // LandingOrder: for inquiries / pending calls
+    const orderCount = await LandingOrder.countDocuments();
+    const pendingOrderCount = await LandingOrder.countDocuments({
+      $or: [
+        { callStatus: { $exists: false } },
+        { callStatus: "" },
+        { callStatus: null },
+        { callStatus: "Pending" }
+      ]
+    });
+
+    // Created orders (actual stock reduced)
+    const createOrderCount = await Order.countDocuments();
+
+    // Employees
     const employeeCount = await Employee.countDocuments();
+
+    // Products for stock table
+    const products = await Product.find();
+
+    // Finances
+    const finances = await Finance.find();
+    const totalRevenue = finances.reduce((sum, f) => sum + (f.revenue || 0), 0);
+    const totalCost = finances.reduce((sum, f) => sum + (f.cost || 0), 0);
+    const profit = totalRevenue - totalCost;
+
     res.render('admin', {
       orderCount,
+      pendingOrderCount,
+      createOrderCount,
       employeeCount,
+      products,
+      totalRevenue,
+      totalCost,
+      profit,
       message: null,
       currentRoute: 'admin',
       user: req.session.user
     });
+
   } catch (err) {
     console.error(err);
     res.render('admin', {
       orderCount: 0,
+      pendingOrderCount: 0,
+      createOrderCount: 0,
       employeeCount: 0,
+      products: [],
+      totalRevenue: 0,
+      totalCost: 0,
+      profit: 0,
       message: 'Something went wrong',
       currentRoute: 'admin',
       user: req.session.user
     });
   }
 });
+
+
 // Admin Orders
 app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, res) => {
   try {
@@ -197,7 +238,6 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
     const search = req.query.search || "";
     const selectedDate = req.query.date || "";
 
-    // 🔍 Search by name or phone
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -205,7 +245,6 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       ];
     }
 
-    // 📅 Filter by date
     if (selectedDate) {
       const start = new Date(selectedDate);
       start.setHours(0, 0, 0, 0);
@@ -214,7 +253,6 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       query.createdAt = { $gte: start, $lte: end };
     }
 
-    // 📞 Filter by call status
     if (req.query.status && req.query.status !== "") {
       if (req.query.status === "Pending") {
         query.$or = query.$or || [];
@@ -229,14 +267,17 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       }
     }
 
-    // ✅ Filter by handle status
+    // ✅ SAFER HANDLE FILTER
     if (req.query.handle === "Unhandled") {
-      query.isInProgress = { $ne: true };
+      query.$or = [
+        { isInProgress: false },
+        { isInProgress: { $exists: false } },
+        { isInProgress: null }
+      ];
     } else if (req.query.handle === "Handled") {
       query.isInProgress = true;
     }
 
-    // Get total count & data
     const totalOrders = await LandingOrder.countDocuments(query);
     const totalPages = Math.ceil(totalOrders / pageSize);
 
@@ -244,7 +285,7 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
-      .populate('handledBy');
+      .populate('handledBy', 'displayName email');
 
     res.render('orders', {
       orders,
@@ -274,6 +315,7 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
     });
   }
 });
+
 
 // ✅ Toggle lock / unlock
 app.post('/admin/orders/toggle-lock/:id', isAuthenticated, hasPermission('orders'), async (req, res) => {
@@ -320,13 +362,18 @@ app.post('/admin/orders/update-call-status', isAuthenticated, hasPermission('ord
   if (!['Answered', 'Declined', 'Pending'].includes(callStatus)) return res.redirect('/admin/orders');
 
   try {
-    await LandingOrder.findByIdAndUpdate(orderId, { callStatus });
+    const order = await LandingOrder.findById(orderId);
+    if (order && order.handledBy?.toString() === req.session.user.id) {
+      order.callStatus = callStatus;
+      await order.save();
+    }
     res.redirect('/admin/orders');
   } catch (err) {
     console.error('Error updating call status:', err);
     res.redirect('/admin/orders');
   }
 });
+
 // Admin Create Order
 app.get('/admin/create-order', isAuthenticated, hasPermission('create-order'), async (req, res) => {
   try {
