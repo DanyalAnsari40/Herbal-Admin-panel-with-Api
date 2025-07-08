@@ -459,178 +459,131 @@
                             </div>
 
                             <div class="overflow-x-auto">
-                              <table class="w-full">
-                                <thead>
-                                  <tr
-                                    class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase text-sm font-semibold">
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-user mr-2"></i>Customer
-                                    </th>
-                                    <!-- <th class="py-4 px-6 text-left">
-                            <i class="fas fa-envelope mr-2"></i>Email
-                          </th> -->
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-phone mr-2"></i>Phone
-                                    </th>
-                                    <!-- <th class="py-4 px-6 text-left">
-                            <i class="fas fa-map-marker-alt mr-2"></i>Address
-                          </th> -->
-                                    <!-- <th class="py-4 px-6 text-left">
-                            <i class="fas fa-mail-bulk mr-2"></i>Postal Code
-                          </th> -->
-                                    <!-- <th class="py-4 px-6 text-left">
-                            <i class="fas fa-calendar mr-2"></i>Created
-                          </th> -->
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-city mr-2"></i>City
-                                    </th>
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-sort-numeric-up mr-2"></i>Quantity
-                                    </th>
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-box mr-2"></i>Product
-                                    </th>
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-truck mr-2"></i>Service
+                          <table class="w-full">
+  <thead>
+    <tr class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase text-sm font-semibold">
+      <th class="py-4 px-6 text-left"><i class="fas fa-user mr-2"></i>Customer</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-phone mr-2"></i>Phone</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-city mr-2"></i>City</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-sort-numeric-up mr-2"></i>Quantity</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-box mr-2"></i>Product</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-truck mr-2"></i>Service</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-barcode mr-2"></i>Tracking ID</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-shipping-fast"></i>track</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-info-circle mr-2"></i>More</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-wrench mr-2"></i>Actions</th>
+      <th class="py-4 px-6 text-left"><i class="fas fa-undo-alt mr-2"></i>Return</th>
+    </tr>
+  </thead>
+  <tbody class="text-gray-700">
+  <% orders.forEach((order, index)=> { %>
+  <tr class="border-b border-gray-100 hover:bg-green-50 transition-colors duration-200 <%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+    <td class="py-4 px-6 font-medium">
+      <div class="flex items-center">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+          <i class="fas fa-user text-green-600 text-sm"></i>
+        </div>
+        <%= order.customerName %>
+      </div>
+    </td>
+    
+    <td class="py-4 px-6">
+      <div class="flex items-center">
+        <i class="fas fa-phone text-purple-500 mr-2"></i>
+        <%= order.phone %>
+      </div>
+    </td>
 
-                                      <!--!  -->
-                                    <th class="py-4 px-6 text-left"><i class="fas fa-barcode mr-2"></i>Tracking ID</th>
+    <td class="py-4 px-6">
+      <div class="flex items-center">
+        <i class="fas fa-city text-orange-500 mr-2"></i>
+        <%= order.city || '-' %>
+      </div>
+    </td>
 
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-shipping-fast"></i>track
-                                    </th>
-                                    <th class="py-4 px-6 text-left"><i class="fas fa-info-circle mr-2"></i>More</th>
-                                    </th>
-                                    <th class="py-4 px-6 text-left">
-                                      <i class="fas fa-wrench mr-2"></i>Actions
-                                    </th>
-                                    <!--!  -->
-                                  </tr>
+    <td class="py-4 px-6">
+      <div class="flex items-center">
+        <i class="fas fa-sort-numeric-up text-teal-500 mr-2"></i>
+        <%= order.quantity %>
+      </div>
+    </td>
 
-                                </thead>
-                                <tbody class="text-gray-700">
-                                  <% orders.forEach((order, index)=> { %>
-                                    <tr
-                                      class="border-b border-gray-100 hover:bg-green-50 transition-colors duration-200 <%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
-                                      <td class="py-4 px-6 font-medium">
-                                        <div class="flex items-center">
-                                          <div
-                                            class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fas fa-user text-green-600 text-sm"></i>
-                                          </div>
-                                          <%= order.customerName %>
-                                        </div>
-                                      </td>
-                                      <!-- <td class="py-4 px-6">
-                              <div class="flex items-center">
-                                <i class="fas fa-envelope text-green-500 mr-2"></i>
-                                <%= order.email || '-' %>
-                              </div>
-                            </td> -->
-                                      <td class="py-4 px-6">
-                                        <div class="flex items-center">
-                                          <i class="fas fa-phone text-purple-500 mr-2"></i>
-                                          <%= order.phone %>
-                                        </div>
-                                      </td>
-                                      <!-- <td class="py-4 px-6">
-                              <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
-                                <%= order.address || '-' %>
-                              </div>
-                            </td> -->
-                                      <!-- <td class="py-4 px-6">
-                              <div class="flex items-center">
-                                <i class="fas fa-mail-bulk text-indigo-500 mr-2"></i>
-                                <%= order.postalCode || '-' %>
-                              </div> -->
-                                      <!-- <td class="py-4 px-6 text-sm text-gray-500">
-                                <div class="flex items-center">
-                                  <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
-                                  <%= new Date(order.createdAt).toLocaleDateString() %>
-                                </div>
-                              </td> -->
-                                      </td>
-                                      <td class="py-4 px-6">
-                                        <div class="flex items-center">
-                                          <i class="fas fa-city text-orange-500 mr-2"></i>
-                                          <%= order.city || '-' %>
-                                        </div>
-                                      </td>
-                                      <td class="py-4 px-6">
-                                        <div class="flex items-center">
-                                          <i class="fas fa-sort-numeric-up text-teal-500 mr-2"></i>
-                                          <%= order.quantity %>
-                                        </div>
-                                      </td>
+    <td class="py-4 px-6 font-medium">
+      <div class="flex items-center">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+          <i class="fas fa-box"></i>
+        </div>
+        <%= order.product?.name || 'N/A' %>
+      </div>
+    </td>
 
-                                      <td class="py-4 px-6 font-medium">
-                                        <div class="flex items-center">
-                                          <div
-                                            class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fas fa-box"></i>
-                                          </div>
-                                          <%= order.product?.name || 'N/A' %>
-                                        </div>
-                                      </td>
+    <td class="py-4 px-6 font-medium">
+      <div class="flex items-center">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+          <i class="fa-solid fa-truck"></i>
+        </div>
+        <%= order.service %>
+      </div>
+    </td>
 
-                                      <td class="py-4 px-6 font-medium">
-                                        <div class="flex items-center">
-                                          <div
-                                            class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fa-solid fa-truck"></i>
-                                          </div>
-                                          <%= order.service %>
-                                        </div>
-                                      </td>
+    <td class="py-4 px-6">
+      <% if (order.pickupMethod==='office' ) { %>
+        <span class="text-blue-600 font-semibold">Pickup from Office</span>
+      <% } else if (!order.trackingId) { %>
+        <button class="text-green-600 underline" onclick="openTrackingModal('<%= order._id %>')">Add ID</button>
+      <% } else { %>
+        <span class="text-gray-700">Original ID: <%= order.trackingId %></span>
+      <% } %>
+    </td>
 
-                                      <!--!  -->
-                                      <td class="py-4 px-6">
-                                        <% if (order.pickupMethod==='office' ) { %>
-                                          <span class="text-gray-500">—</span>
-                                          <% } else if (!order.trackingId) { %>
-                                            <button class="text-green-600 underline"
-                                              onclick="openTrackingModal('<%= order._id %>')">Add ID</button>
-                                            <% } else { %>
-                                              <span class="text-gray-700">Original ID: <%= order.trackingId %></span>
-                                              <% } %>
-                                      </td>
+    <td class="py-4 px-6">
+      <% if (order.pickupMethod==='office' ) { %>
+        <span class="text-gray-400 italic">N/A</span>
+      <% } else { %>
+        <a href="/admin/tracking?p_id=<%= order.trackingId || '' %>&service=<%= order.service || '' %>"
+          class="text-green-600 hover:underline flex items-center space-x-1">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Track</span>
+        </a>
+      <% } %>
+    </td>
 
-                                      <td class="py-4 px-6">
-                                        <% if (order.pickupMethod==='office' ) { %>
-                                          <span class="text-gray-500">—</span>
-                                          <% } else { %>
-                                            <a href="/admin/tracking?p_id=<%= order.trackingId || '' %>&service=<%= order.service || '' %>"
-                                              class="text-green-600 hover:underline flex items-center space-x-1">
-                                              <i class="fas fa-map-marker-alt"></i>
-                                              <span>Track</span>
-                                            </a>
-                                            <% } %>
-                                      </td>
+    <td class="py-4 px-6">
+      <button class="text-indigo-600 hover:underline"
+        data-order='<%- JSON.stringify(order).replace(/' /g, "&#39;" ) %>'
+        onclick="showMoreDetails(this)">
+        See More
+      </button>
+    </td>
 
+    <td class="py-4 px-6 text-center">
+      <form action="/admin/create-order/delete/<%= order._id %>" method="POST"
+        onsubmit="return confirm('Are you sure you want to delete this order?');">
+        <button type="submit" class="text-red-600 hover:text-red-800">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
+    </td>
 
-                                      <td class="py-4 px-6">
-                                        <button class="text-indigo-600 hover:underline"
-                                          data-order='<%- JSON.stringify(order).replace(/' /g, "&#39;" ) %>'
-                                          onclick="showMoreDetails(this)">
-                                          See More
-                                        </button>
-                                      </td>
+    <td class="py-4 px-6 text-center">
+      <% if(order.trackingId === "Order Returned") { %>
+        <span class="text-red-600 font-semibold">Returned</span>
+      <% } else if(order.pickupMethod==='office' || order.trackingId) { %>
+        <button onclick="openReturnModal('<%= order._id %>')"
+          class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
+          Return
+        </button>
+      <% } else { %>
+        <span class="text-gray-400 italic">Dispatch First</span>
+      <% } %>
+    </td>
 
-                                      <!--!  -->
-                                      <td class="py-4 px-6 text-center">
-                                        <form action="/admin/create-order/delete/<%= order._id %>" method="POST"
-                                          onsubmit="return confirm('Are you sure you want to delete this order?');">
-                                          <button type="submit" class="text-red-600 hover:text-red-800">
-                                            <i class="fas fa-trash-alt"></i>
-                                          </button>
-                                        </form>
-                                      </td>
+  </tr>
+  <% }) %>
+</tbody>
 
-                                    </tr>
-                                    <% }) %>
-                                </tbody>
-                              </table>
+</table>
+
                             </div>
                           </div>
 
@@ -701,7 +654,6 @@
         </div>
 
         <!-- SEE MORE DETAILS MODAL -->
-        <!-- SEE MORE DETAILS MODAL -->
         <div id="seeMoreModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
           <div id="seeMoreContent"
             class="bg-white rounded-xl w-full max-w-lg shadow-xl transform scale-95 opacity-0 transition-all duration-300">
@@ -720,6 +672,21 @@
             <!-- Modal footer -->
           </div>
         </div>
+        <!-- Return Modal -->
+<div id="returnModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Mark as Returned</h2>
+    <p class="text-gray-600 mb-6">Are you sure you want to mark this order as returned? 
+    This will update the tracking ID and restore the quantity back to stock.</p>
+    <div class="flex justify-end space-x-4">
+      <button onclick="closeReturnModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
+      <form id="returnForm" method="POST">
+        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Yes, Return</button>
+      </form>
+    </div>
+  </div>
+</div>
+
         <script>
           // Product selection and stock management
           const prodSelect = document.getElementById('productId');
@@ -854,6 +821,20 @@
             sidebar.classList.toggle('p-6');
             sidebar.classList.toggle('p-2');
           }
+
+
+
+           function openReturnModal(orderId) {
+    const form = document.getElementById('returnForm');
+    form.action = `/admin/create-order/return/${orderId}`;
+    document.getElementById('returnModal').classList.remove('hidden');
+    document.getElementById('returnModal').classList.add('flex');
+  }
+
+  function closeReturnModal() {
+    document.getElementById('returnModal').classList.remove('flex');
+    document.getElementById('returnModal').classList.add('hidden');
+  }
         </script>
 </body>
 

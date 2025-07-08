@@ -163,41 +163,68 @@ app.post('/order', async (req, res) => {
   }
 });
 
-//Admin page/dashbord 
-// Admin Dashboard
+// 🚀 Admin Dashboard
 // 🚀 Admin Dashboard
 app.get('/admin', isAuthenticated, async (req, res) => {
   try {
-    // LandingOrder: for inquiries / pending calls
-    const orderCount = await LandingOrder.countDocuments();
-    const pendingOrderCount = await LandingOrder.countDocuments({
-      $or: [
-        { callStatus: { $exists: false } },
-        { callStatus: "" },
-        { callStatus: null },
-        { callStatus: "Pending" }
-      ]
-    });
+    let orderCount = 0;
+    let pendingOrderCount = 0;
+    let createOrderCount = 0;
+    let totalDispatchedOrders = 0;
+    let employeeCount = 0;
+    let products = [];
+    let finances = [];
+    let totalRevenue = 0;
+    let totalCost = 0;
+    let profit = 0;
 
-    // Created orders (actual stock reduced)
-    const createOrderCount = await Order.countDocuments();
+    if (req.session.user.role === 'admin') {
+      // For admin
+      orderCount = await LandingOrder.countDocuments();
+      pendingOrderCount = await LandingOrder.countDocuments({
+        $or: [
+          { callStatus: { $exists: false } },
+          { callStatus: "" },
+          { callStatus: null },
+          { callStatus: "Pending" }
+        ]
+      });
+      createOrderCount = await Order.countDocuments(); // total orders created
 
-    // Employees
-    const employeeCount = await Employee.countDocuments();
+      totalDispatchedOrders = await Order.countDocuments({
+        $or: [
+          { trackingId: { $exists: true, $ne: "", $nin: ["Order Returned"] } },
+          { pickupMethod: "office", trackingId: { $ne: "Order Returned" } }
+        ]
+      }); // total dispatched orders excluding returned
 
-    // Products for stock table
-    const products = await Product.find();
+      employeeCount = await Employee.countDocuments();
+      products = await Product.find();
+      finances = await Finance.find();
+      totalRevenue = finances.reduce((sum, f) => sum + (f.revenue || 0), 0);
+      totalCost = finances.reduce((sum, f) => sum + (f.cost || 0), 0);
+      profit = totalRevenue - totalCost;
 
-    // Finances
-    const finances = await Finance.find();
-    const totalRevenue = finances.reduce((sum, f) => sum + (f.revenue || 0), 0);
-    const totalCost = finances.reduce((sum, f) => sum + (f.cost || 0), 0);
-    const profit = totalRevenue - totalCost;
+    } else {
+      // For employees
+      createOrderCount = await Order.countDocuments({
+        handledBy: req.session.user.id
+      }); // total orders created by this employee
+
+      totalDispatchedOrders = await Order.countDocuments({
+        handledBy: req.session.user.id,
+        $or: [
+          { trackingId: { $exists: true, $ne: "", $nin: ["Order Returned"] } },
+          { pickupMethod: "office", trackingId: { $ne: "Order Returned" } }
+        ]
+      }); // orders by this employee excluding returned
+    }
 
     res.render('admin', {
       orderCount,
       pendingOrderCount,
       createOrderCount,
+      totalDispatchedOrders,
       employeeCount,
       products,
       totalRevenue,
@@ -214,6 +241,7 @@ app.get('/admin', isAuthenticated, async (req, res) => {
       orderCount: 0,
       pendingOrderCount: 0,
       createOrderCount: 0,
+      totalDispatchedOrders: 0,
       employeeCount: 0,
       products: [],
       totalRevenue: 0,
@@ -225,7 +253,6 @@ app.get('/admin', isAuthenticated, async (req, res) => {
     });
   }
 });
-
 
 // Admin Orders
 app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, res) => {
@@ -373,7 +400,6 @@ app.post('/admin/orders/update-call-status', isAuthenticated, hasPermission('ord
     res.redirect('/admin/orders');
   }
 });
-
 // Admin Create Order
 app.get('/admin/create-order', isAuthenticated, hasPermission('create-order'), async (req, res) => {
   try {
@@ -387,6 +413,11 @@ app.get('/admin/create-order', isAuthenticated, hasPermission('create-order'), a
     const end = req.query.end;
 
     const query = {};
+
+    // ✅ Only show orders created by the employee
+    if (req.session.user.role !== 'admin') {
+      query.handledBy = req.session.user.id;
+    }
 
     if (search) {
       query.$or = [
@@ -452,8 +483,6 @@ app.get('/admin/create-order', isAuthenticated, hasPermission('create-order'), a
     });
   }
 });
-
-
 // POST - Handle Order Creation
 app.post('/admin/create-order', isAuthenticated, hasPermission('create-order'), async (req, res) => {
   try {
@@ -534,7 +563,7 @@ app.post('/admin/create-order', isAuthenticated, hasPermission('create-order'), 
     });
   }
 });
-
+// update tracking
 app.post('/admin/create-order/update-tracking', async (req, res) => {
   try {
     const { orderId, trackingId } = req.body;
@@ -565,11 +594,68 @@ app.post('/admin/create-order/delete/:id', isAuthenticated, hasPermission('creat
     res.status(500).render('error', { message: 'Failed to delete order' });
   }
 });
+// ✅ Handle marking an order as returned
+app.post('/admin/create-order/return/:id', isAuthenticated, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('product');
+    if (!order) return res.redirect('/admin/create-order');
+
+    // Set order as returned
+    order.trackingId = "Order Returned";
+    await order.save();
+
+    // Restore stock
+    if (order.product) {
+      order.product.stock += order.quantity;
+      await order.product.save();
+    }
+
+    // Add to finance
+    await Finance.create({
+      type: 'expense',
+      description: `Returned order for ${order.product?.name || 'N/A'} x${order.quantity}`,
+      cost: order.product?.costPrice * order.quantity,
+      revenue: 0,
+      date: new Date()
+    });
+
+    res.redirect('/admin/create-order');
+  } catch (err) {
+    console.error('❌ Error processing return:', err);
+    res.redirect('/admin/create-order');
+  }
+});
+
 // Admin Employee Management
 app.get('/admin/employee-management', isAuthenticated, hasPermission('employee-management'), async (req, res) => {
   try {
     const employees = await Employee.find().sort({ createdAt: -1 });
-    res.render('employee-management', { employees, message: null, currentRoute: 'employee-management', user: req.session.user });
+
+    // Also count dispatched orders: via tracking or office pickup, but skip returned
+    const employeesWithDispatchCount = await Promise.all(
+      employees.map(async (emp) => {
+        const dispatchedCount = await Order.countDocuments({
+          handledBy: emp._id,
+          $or: [
+            { 
+              trackingId: { $exists: true, $ne: "", $nin: ["Order Returned"] }
+            },
+            { 
+              pickupMethod: "office",
+              trackingId: { $ne: "Order Returned" }
+            }
+          ]
+        });
+        return { ...emp.toObject(), dispatchedCount };
+      })
+    );
+
+    res.render('employee-management', {
+      employees: employeesWithDispatchCount,
+      message: null,
+      currentRoute: 'employee-management',
+      user: req.session.user
+    });
   } catch (err) {
     console.error(err);
     res.render('employee-management', {
@@ -580,6 +666,8 @@ app.get('/admin/employee-management', isAuthenticated, hasPermission('employee-m
     });
   }
 });
+
+
 // Add Employee
 app.post('/admin/employee-management', isAuthenticated, hasPermission('employee-management'), async (req, res) => {
   try {
@@ -634,8 +722,6 @@ app.get('/admin/employees/edit/:id', isAuthenticated, hasPermission('employee-ma
     res.status(500).render('error', { message: 'Server error' });
   }
 });
-
-// Update Employee
 // Update Employee
 app.post('/admin/employees/edit/:id', isAuthenticated, hasPermission('employee-management'), async (req, res) => {
   try {
@@ -681,8 +767,6 @@ app.post('/admin/employees/edit/:id', isAuthenticated, hasPermission('employee-m
     });
   }
 });
-
-
 // Delete Employee
 app.post('/admin/employees/delete/:id', isAuthenticated, hasPermission('employee-management'), async (req, res) => {
   try {
@@ -699,7 +783,6 @@ app.post('/admin/employees/delete/:id', isAuthenticated, hasPermission('employee
     });
   }
 });
-
 // adding product Details
 const Product = require('./models/Product'); // Add at the top
 // Route to render the Product Management page
@@ -728,8 +811,6 @@ app.get('/admin/product-management', isAuthenticated, hasPermission('product-man
     });
   }
 });
-
-
 // Route to add new product
 app.post('/admin/product-management', isAuthenticated, hasPermission('employee-management'), async (req, res) => {
   try {
@@ -765,7 +846,6 @@ app.get('/admin/products/edit/:id', isAuthenticated, hasPermission('product-mana
 
   res.render('edit-product', { product, message: null, user: req.session.user });
 });
-
 // Handle edit submission
 app.post('/admin/products/edit/:id', isAuthenticated, hasPermission('product-management'), async (req, res) => {
   const { name, price, stock, costPrice } = req.body;
