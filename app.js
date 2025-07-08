@@ -940,7 +940,7 @@ app.post('/admin/finance', isAuthenticated, async (req, res) => {
     res.redirect('/admin/finance');
   }
 });
-// !!!!!!!!!!setitng profile picture
+//! setting profile picture
 app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (req, res) => {
   const employee = await Employee.findById(req.session.user.id);
   employee.displayName = req.body.displayName;
