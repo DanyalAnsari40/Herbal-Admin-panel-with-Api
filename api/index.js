@@ -1,6 +1,7 @@
 const serverless = require('serverless-http');
 const app = require('../app.js');
 
+console.log("🚀 api/index.js loaded");
+
 module.exports = serverless(app);
-// ALSO add this to support AWS/Lambda style (Vercel likes it too)
-module.exports.handler = serverless(app);
+module.exports.handler = serverless(app); // IMPORTANT for Vercel
