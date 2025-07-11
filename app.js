@@ -953,6 +953,9 @@ app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (
   req.session.user.profilePic = employee.profilePic;
   res.redirect('/admin');
 });
+app.get('/ping', (req, res) => {
+  res.send('Server is alive!');
+});
 // !
 module.exports = app;
 
