@@ -1,4 +1,3 @@
-console.log("🚀 App starting...");
 const express = require('express');
 require('dotenv').config()
 const mongoose = require('mongoose');
@@ -8,18 +7,13 @@ const session = require('express-session');
 // for Finance mangemnet
 const Finance = require('./models/Finance');
 const multer = require('multer');
-// const upload = multer({ dest: 'public/uploads/' });
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ dest: 'public/uploads/' });
 const LandingOrder = require('./models/Order'); // your simple schema: name, phone, createdAt
-
 const app = express();
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-import path from "path";
-
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
 app.use(session({
   secret: 'your-secret-key',
@@ -27,15 +21,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false } // Set to true in production with HTTPS
 }));
-
 // MongoDB connection
-mongoose.connect(process.env.MONGOURI).then(() => {
-  console.log('✅ MongoDB connected');
-}).catch(err => console.error('MongoDB connection error:', err));
-
-// mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
-//   console.log('✅ MongoDB connected')
-//   .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Order Schema
 const orderSchema = new mongoose.Schema({
@@ -115,9 +103,10 @@ app.get('/admin/tracking', isAuthenticated, hasPermission('employee-management')
     currentRoute: 'tracking'
   });
 });
-// !!!!!!!!!!!!!!!!
-// Routes
-
+// Landing Page
+app.get('/', (req, res) => {
+  res.render('index', { message: null });
+});
 // Login Page
 app.get('/login', (req, res) => {
   res.render('login', { message: null });
@@ -154,11 +143,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-// Landing Page
-app.get('/', (req, res) => {
-    res.send('Server is alive!');
-  // res.render('index', { message: null });/
-});
+
 // orders
 app.post('/order', async (req, res) => {
   try {
@@ -966,8 +951,5 @@ app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (
 app.get('/ping', (req, res) => {
   res.send('Server is alive!');
 });
-// !
 module.exports = app;
-
-
 
