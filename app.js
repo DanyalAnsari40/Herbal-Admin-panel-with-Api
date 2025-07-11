@@ -953,8 +953,7 @@ app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (
   res.redirect('/admin');
 });
 // !
-app.listen(3000, () => {
-  console.log('Server running at http://localhost:3000');
-});
+module.exports = app;
+
 
 
