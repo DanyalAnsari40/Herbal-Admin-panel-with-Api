@@ -6,8 +6,8 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 // for Finance mangemnet
 const Finance = require('./models/Finance');
-const multer = require('multer');
-const upload = multer({ dest: 'public/uploads/' });
+// const multer = require('multer');
+// const upload = multer({ dest: 'public/uploads/' });
 const LandingOrder = require('./models/Order'); // your simple schema: name, phone, createdAt
 
 const app = express();
