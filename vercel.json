@@ -6,11 +6,18 @@
       "use": "@vercel/node"
     }
   ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": [
+        "views/**",
+        "public/**"
+      ]
+    }
+  },
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
-  ],
-  "includeFiles": ["views/**", "public/**"]
+  ]
 }
