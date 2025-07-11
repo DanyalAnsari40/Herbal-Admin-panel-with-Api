@@ -153,7 +153,8 @@ app.get('/logout', (req, res) => {
 
 // Landing Page
 app.get('/', (req, res) => {
-  res.render('index', { message: null });
+    res.send('Server is alive!');
+  // res.render('index', { message: null });/
 });
 // orders
 app.post('/order', async (req, res) => {
