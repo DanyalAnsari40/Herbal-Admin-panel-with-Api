@@ -9,6 +9,7 @@ const Finance = require('./models/Finance');
 const multer = require('multer');
 const upload = multer({ dest: 'public/uploads/' });
 const LandingOrder = require('./models/Order'); // your simple schema: name, phone, createdAt
+
 const app = express();
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,6 +22,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false } // Set to true in production with HTTPS
 }));
+
 // MongoDB connection
 mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
@@ -103,10 +105,9 @@ app.get('/admin/tracking', isAuthenticated, hasPermission('employee-management')
     currentRoute: 'tracking'
   });
 });
-// Landing Page
-app.get('/', (req, res) => {
-  res.render('index', { message: null });
-});
+// !!!!!!!!!!!!!!!!
+// Routes
+
 // Login Page
 app.get('/login', (req, res) => {
   res.render('login', { message: null });
@@ -143,7 +144,10 @@ app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-
+// Landing Page
+app.get('/', (req, res) => {
+  res.render('index', { message: null });
+});
 // orders
 app.post('/order', async (req, res) => {
   try {
@@ -948,8 +952,9 @@ app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (
   req.session.user.profilePic = employee.profilePic;
   res.redirect('/admin');
 });
-app.get('/ping', (req, res) => {
-  res.send('Server is alive!');
+// !
+app.listen(3000, () => {
+  console.log('Server running at http://localhost:3000');
 });
-module.exports = app;
+
 

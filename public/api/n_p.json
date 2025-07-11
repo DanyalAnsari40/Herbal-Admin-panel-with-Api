@@ -1,0 +1,77 @@
+[
+  {
+    "isSuccess": "true",
+    "message": "Consignment Number Valid",
+    "orderReferenceIdList": [":Succesfull"],
+    "tracking_Details": [
+      {
+        "Consignment": "123456789123457",
+        "BookingDate": "7/12/2019 4:06:17 PM",
+        "Destination": "Multan",
+        "Origin": "Multan",
+        "Shipper": "TEST M&P",
+        "Consignee": "Test For Tracking.",
+        "ServiceType": "overnight",
+        "CNStatus": "DELIVERED",
+        "CNStatusID": "55",
+        "Details": [
+          {
+            "DateTime": "7/12/2019 4:03:35 PM",
+            "Status": "Booking",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:06:17 PM",
+            "Status": "Booking",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:23:08 PM",
+            "Status": "Arrival No :2774445 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui on Location:KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:25:07 PM",
+            "Status": "Manifest No :000031511511 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:25:54 PM",
+            "Status": "Bag No: 00015224688 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui on Location:KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:26:57 PM",
+            "Status": "Loading No :190712162604527 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:27:17 PM",
+            "Status": "UnLoading No :201900018198 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:27:47 PM",
+            "Status": "DeBagging No: 2017241331 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:29:37 PM",
+            "Status": "DeManifest No: 000031511511 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:30:09 PM",
+            "Status": "Runsheet No :201911669345 was Generated on :12 Jul 2019 by User :Nabeel Ahmed Siddiqui onLocation :KARACHI MAIN OFFICE against Rider :WW02 -MOHAMMAD KHALID",
+            "Location": "KARACHI"
+          },
+          {
+            "DateTime": "7/12/2019 4:32:09 PM",
+            "Status": "DELIVERED Comment: ",
+            "Location": "Multan"
+          }
+        ]
+      }
+    ]
+  }
+]
