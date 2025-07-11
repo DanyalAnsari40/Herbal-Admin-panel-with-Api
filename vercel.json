@@ -8,10 +8,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": [
-        "views/**",
-        "public/**"
-      ]
+      "includeFiles": "**"
     }
   },
   "routes": [
