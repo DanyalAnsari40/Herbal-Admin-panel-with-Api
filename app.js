@@ -25,9 +25,13 @@ app.use(session({
 }));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
-  console.log('✅ MongoDB connected')
-  .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGOURI).then(() => {
+  console.log('✅ MongoDB connected');
+}).catch(err => console.error('MongoDB connection error:', err));
+
+// mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
+//   console.log('✅ MongoDB connected')
+//   .catch(err => console.error('MongoDB connection error:', err));
 
 // Order Schema
 const orderSchema = new mongoose.Schema({
