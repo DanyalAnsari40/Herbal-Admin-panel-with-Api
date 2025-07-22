@@ -8,6 +8,11 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-green-50 font-sans">
+  <style>
+    .modal-open {
+      overflow: hidden;
+    }
+  </style>
   <div class="min-h-screen flex flex-col">
   <% if (user.role==='admin' ) { %>
     <div class="min-h-screen flex">
@@ -90,6 +95,10 @@
                                 <i class="fas fa-boxes w-4"></i><span>Products</span>
                               </a>
                               <% } %>
+                                <a href="/admin/attendence"
+                                  class="flex items-center space-x-2 px-3 py-1 rounded hover:bg-white/10 transition <%= currentRoute === 'attendence' ? 'bg-white/20 font-semibold underline' : '' %>">
+                                  <i class="fa-solid fa-clock w-4"></i><span>Attendance</span>
+                                </a>
               </nav>
             </div>
             <div class="flex items-center space-x-4">
@@ -368,6 +377,9 @@
       <i class="fas fa-box mr-2 text-green-500"></i>Dispatched Orders
     </th>
     <th class="py-4 px-6 text-left">
+      <i class="fa-solid fa-calendar-check mr-2 text-blue-500"></i>Attendance Detail
+    </th>
+    <th class="py-4 px-6 text-left">
       <i class="fas fa-cogs mr-2"></i>Actions
     </th>
   </tr>
@@ -407,6 +419,12 @@
           <i class="fas fa-truck mr-1"></i>
           <%= employee.dispatchedCount %>
         </span>
+      </td>
+      <!-- 🚀 NEW COLUMN: Attendance Detail Button -->
+      <td class="py-4 px-6">
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow flex items-center gap-2 attendance-detail-btn" data-employee-id="<%= employee._id %>" data-employee-name="<%= employee.displayName || employee.email %>">
+          <i class="fa-solid fa-calendar-check"></i> Details
+        </button>
       </td>
       <td class="py-4 px-6">
         <div class="flex items-center space-x-3">
@@ -490,6 +508,100 @@ function toggleSidebar() {
   sidebar.classList.toggle('p-6');
   sidebar.classList.toggle('p-2');
 }
+  </script>
+  <!-- Attendance Detail Modal -->
+  <div id="attendanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white p-8 rounded-2xl w-full max-w-2xl shadow-xl relative max-h-[80vh] overflow-y-auto">
+      <button onclick="closeAttendanceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
+      <h2 class="text-2xl font-bold mb-4 text-blue-700 flex items-center gap-2"><i class="fa-solid fa-calendar-check"></i> Attendance Details for <span id="attendanceEmployeeName" class="ml-2"></span></h2>
+      <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
+        <label class="font-semibold text-gray-700">Month:
+          <input type="month" id="attendanceMonth" class="border rounded px-2 py-1 ml-2" />
+        </label>
+        <label class="font-semibold text-gray-700">Year:
+          <input type="number" id="attendanceYear" min="2000" max="2100" class="border rounded px-2 py-1 ml-2 w-24" />
+        </label>
+        <button id="attendanceSummaryBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold">Show Summary</button>
+        <button id="attendanceExportBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold">Export CSV</button>
+      </div>
+      <div id="attendanceTableContainer">
+        <div class="text-center text-gray-500">Loading...</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function closeAttendanceModal() {
+      document.getElementById('attendanceModal').classList.add('hidden');
+      document.body.classList.remove('modal-open');
+      document.getElementById('attendanceTableContainer').innerHTML = '<div class="text-center text-gray-500">Loading...</div>';
+    }
+    let currentEmployeeId = null;
+    let currentEmployeeName = null;
+    function setDefaultMonthYear() {
+      const now = new Date();
+      document.getElementById('attendanceMonth').value = now.toISOString().slice(0,7);
+      document.getElementById('attendanceYear').value = now.getFullYear();
+    }
+    async function loadAttendanceSummary(employeeId, month, year) {
+      let url = `/admin/attendance-summary/${employeeId}`;
+      if (month) url += `?month=${month}`;
+      else if (year) url += `?year=${year}`;
+      document.getElementById('attendanceTableContainer').innerHTML = '<div class="text-center text-gray-500">Loading...</div>';
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success && data.summary.length > 0) {
+          let table = `<table class='min-w-full text-sm mt-4'><thead><tr class='bg-blue-50 text-blue-700'><th class='py-2 px-4'>Date</th><th class='py-2 px-4'>Status</th><th class='py-2 px-4'>Check In</th><th class='py-2 px-4'>Check Out</th><th class='py-2 px-4'>Total Time</th></tr></thead><tbody>`;
+          data.summary.forEach(a => {
+            table += `<tr class='border-b ${a.absent ? 'bg-red-50' : 'bg-green-50'}'>` +
+              `<td class='py-2 px-4'>${new Date(a.date).toLocaleDateString()}</td>` +
+              `<td class='py-2 px-4'>${a.absent ? '<span class="text-red-600 font-bold">Absent</span>' : '<span class="text-green-600 font-bold">Present</span>'}</td>` +
+              `<td class='py-2 px-4'>${a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '-'}</td>` +
+              `<td class='py-2 px-4'>${a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '-'}</td>` +
+              `<td class='py-2 px-4'>${a.totalTime || '-'}</td></tr>`;
+          });
+          table += '</tbody></table>';
+          document.getElementById('attendanceTableContainer').innerHTML = table;
+        } else {
+          document.getElementById('attendanceTableContainer').innerHTML = '<div class="text-center text-gray-500">No attendance records found.</div>';
+        }
+      } catch (err) {
+        document.getElementById('attendanceTableContainer').innerHTML = '<div class="text-center text-red-500">Failed to load attendance data.</div>';
+      }
+    }
+    document.querySelectorAll('.attendance-detail-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        currentEmployeeId = this.getAttribute('data-employee-id');
+        currentEmployeeName = this.getAttribute('data-employee-name');
+        document.getElementById('attendanceEmployeeName').textContent = currentEmployeeName;
+        document.getElementById('attendanceModal').classList.remove('hidden');
+        document.body.classList.add('modal-open');
+        setDefaultMonthYear();
+        await loadAttendanceSummary(currentEmployeeId, document.getElementById('attendanceMonth').value, null);
+      });
+    });
+    document.getElementById('attendanceSummaryBtn').addEventListener('click', async function() {
+      const month = document.getElementById('attendanceMonth').value;
+      const year = document.getElementById('attendanceYear').value;
+      await loadAttendanceSummary(currentEmployeeId, month, year);
+    });
+    document.getElementById('attendanceExportBtn').addEventListener('click', function() {
+      const month = document.getElementById('attendanceMonth').value;
+      const year = document.getElementById('attendanceYear').value;
+      let start, end;
+      if (month) {
+        start = month + '-01';
+        const d = new Date(start);
+        d.setMonth(d.getMonth() + 1);
+        end = d.toISOString().slice(0,10);
+      } else if (year) {
+        start = year + '-01-01';
+        end = year + '-12-31';
+      }
+      let url = `/admin/attendance-export/${currentEmployeeId}`;
+      if (start && end) url += `?start=${start}&end=${end}`;
+      window.open(url, '_blank');
+    });
   </script>
 </body>
 </html>

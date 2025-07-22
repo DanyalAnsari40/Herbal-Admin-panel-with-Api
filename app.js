@@ -9,6 +9,7 @@ const Finance = require('./models/Finance');
 const multer = require('multer');
 const upload = multer({ dest: 'public/uploads/' });
 const LandingOrder = require('./models/Order'); // your simple schema: name, phone, createdAt
+const { Parser } = require('json2csv');
 
 const app = express();
 // Middleware
@@ -24,7 +25,11 @@ app.use(session({
 }));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGOURI).then(() => console.log('MongoDB connected'))
+mongoose.connect(process.env.MONGOURI, {
+  connectTimeoutMS: 30000, // 30 seconds
+  socketTimeoutMS: 30000,  // 30 seconds
+  serverSelectionTimeoutMS: 60000, // 60 seconds for server selection
+}).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Order Schema
@@ -62,6 +67,20 @@ const employeeSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 const Employee = mongoose.model('Employee', employeeSchema);
+
+// Attendance Schema
+const attendanceSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
+  email: { type: String },
+  displayName: { type: String },
+  checkIn: { type: String },
+  checkOut: { type: String },
+  totalTime: { type: String },
+  status: { type: String, enum: ['present', 'absent'], default: 'absent' },
+  date: { type: Date, default: () => new Date().setHours(0,0,0,0) },
+});
+attendanceSchema.index({ user: 1, date: 1 }, { unique: true });
+const Attendance = mongoose.model('Attendance', attendanceSchema);
 
 // Hardcoded admin setup (run once or check if exists)
 const setupAdmin = async () => {
@@ -955,6 +974,183 @@ app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (
 // !
 app.listen(3000, () => {
   console.log('Server running at http://localhost:3000');
+});
+
+// Attendance page (GET)
+app.get('/admin/attendence', isAuthenticated, (req, res) => {
+  res.render('attendence', { message: null, user: req.session.user });
+});
+
+// Attendance submission (POST)
+app.post('/admin/attendence', isAuthenticated, async (req, res) => {
+  try {
+    const { checkIn, checkOut } = req.body;
+    if (!checkIn || !checkOut) {
+      return res.render('attendence', { message: 'Both check-in and check-out are required.', user: req.session.user });
+    }
+    // Only one attendance per user per day
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const existing = await Attendance.findOne({ user: req.session.user.id, date: today });
+    if (existing) {
+      return res.render('attendence', { message: 'Attendance already marked for today.', user: req.session.user });
+    }
+    await Attendance.create({
+      user: req.session.user.id,
+      checkIn,
+      checkOut,
+      date: today
+    });
+    res.render('attendence', { message: 'Attendance marked successfully!', user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    res.render('attendence', { message: 'Error marking attendance.', user: req.session.user });
+  }
+});
+
+// AJAX Check In
+app.post('/admin/attendence/checkin', isAuthenticated, async (req, res) => {
+  try {
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const employee = await Employee.findById(req.session.user.id);
+    let attendance = await Attendance.findOne({ user: employee._id, date: today });
+    if (attendance && attendance.checkIn) {
+      // Already checked in today
+      return res.json({ success: false, error: 'You have already checked in today.' });
+    }
+    if (!attendance) {
+      attendance = new Attendance({
+        user: employee._id,
+        email: employee.email,
+        displayName: employee.displayName,
+        date: today
+      });
+    }
+    attendance.checkIn = now.toISOString();
+    attendance.status = 'present';
+    await attendance.save();
+    res.json({ success: true, checkIn: now.toISOString() });
+  } catch (err) {
+    res.json({ success: false, error: 'Check-in failed.' });
+  }
+});
+// AJAX Check Out
+app.post('/admin/attendence/checkout', isAuthenticated, async (req, res) => {
+  try {
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const attendance = await Attendance.findOne({ user: req.session.user.id, date: today });
+    if (!attendance || !attendance.checkIn) {
+      return res.json({ success: false, error: 'No check-in found for today.' });
+    }
+    if (attendance.checkOut) {
+      // Already checked out today
+      return res.json({ success: false, error: 'You have already checked out today.' });
+    }
+    attendance.checkOut = now.toISOString();
+    // Calculate total time
+    const totalMs = new Date(attendance.checkOut) - new Date(attendance.checkIn);
+    const hours = Math.floor(totalMs / 3600000);
+    const minutes = Math.floor((totalMs % 3600000) / 60000);
+    const seconds = Math.floor((totalMs % 60000) / 1000);
+    attendance.totalTime = `${hours.toString().padStart(2, '0')}:${minutes
+      .toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    await attendance.save();
+    res.json({ success: true, checkOut: now.toISOString(), totalTime: attendance.totalTime });
+  } catch (err) {
+    res.json({ success: false, error: 'Check-out failed.' });
+  }
+});
+
+// Attendance details for employee (for modal)
+app.get('/admin/attendance-details/:employeeId', isAuthenticated, async (req, res) => {
+  try {
+    const attendance = await Attendance.find({ user: req.params.employeeId })
+      .sort({ date: -1 })
+      .lean();
+    res.json({ success: true, attendance });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to fetch attendance records.' });
+  }
+});
+
+// Attendance summary (monthly/yearly) and absence detection
+app.get('/admin/attendance-summary/:employeeId', isAuthenticated, async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const employeeId = req.params.employeeId;
+    let start, end;
+    if (month) {
+      // month format: YYYY-MM
+      start = new Date(month + '-01');
+      end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+    } else if (year) {
+      start = new Date(year + '-01-01');
+      end = new Date(year + '-12-31');
+      end.setMonth(12, 0); // last day of year
+    } else {
+      // default: current month
+      start = new Date();
+      start.setDate(1);
+      start.setHours(0,0,0,0);
+      end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+    }
+    // Get all days in range
+    const days = [];
+    let d = new Date(start);
+    while (d < end) {
+      days.push(new Date(d));
+      d.setDate(d.getDate() + 1);
+    }
+    // Fetch attendance records
+    const records = await Attendance.find({
+      user: employeeId,
+      date: { $gte: start, $lt: end }
+    }).lean();
+    // Map by date string
+    const recordMap = {};
+    records.forEach(r => {
+      recordMap[new Date(r.date).toDateString()] = r;
+    });
+    // Build summary
+    const summary = days.map(day => {
+      const key = day.toDateString();
+      if (recordMap[key]) {
+        return { ...recordMap[key], absent: false };
+      } else {
+        return { date: day, status: 'absent', absent: true };
+      }
+    });
+    res.json({ success: true, summary });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to fetch summary.' });
+  }
+});
+// Export attendance to CSV
+app.get('/admin/attendance-export/:employeeId', isAuthenticated, async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    const employeeId = req.params.employeeId;
+    const query = { user: employeeId };
+    if (start && end) {
+      query.date = { $gte: new Date(start), $lte: new Date(end) };
+    }
+    const records = await Attendance.find(query).sort({ date: 1 }).lean();
+    const fields = ['date', 'status', 'checkIn', 'checkOut', 'totalTime'];
+    const opts = { fields, transforms: [r => ({ ...r, date: r.date ? new Date(r.date).toLocaleDateString() : '' })] };
+    const parser = new Parser(opts);
+    const csv = parser.parse(records);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('attendance.csv');
+    res.send(csv);
+  } catch (err) {
+    res.status(500).send('Failed to export CSV');
+  }
 });
 
 
