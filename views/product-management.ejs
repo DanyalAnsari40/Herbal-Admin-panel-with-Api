@@ -233,13 +233,19 @@
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity *</label>
-              <input type="number" name="stock" min="0" step="1" required
+              <input type="number" name="stock" id="stockQtyCalc" min="0" step="1" required
                 class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition"
                 placeholder="e.g. 100" />
             </div>
             <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Total Quantity Price (Rs)</label>
+              <input type="number" id="totalQuantityPrice" min="0" step="0.01"
+                class="w-full p-4 border border-blue-200 rounded-xl bg-blue-50 focus:bg-white focus:ring-2 focus:ring-blue-400 transition"
+                placeholder="e.g. 8000" />
+            </div>
+            <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Cost Price (Rs) *</label>
-              <input type="number" name="costPrice" min="0" step="0.01" required
+              <input type="number" name="costPrice" id="costPrice" min="0" step="0.01" required
                 class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 transition"
                 placeholder="e.g. 80.00" />
             </div>
@@ -341,6 +347,31 @@ function toggleSidebar() {
   sidebar.classList.toggle('p-2');
 }
   </script>
+  <script>
+// Per-unit Cost Price Calculator logic
+const totalCostInput = document.getElementById('totalCostPrice');
+const stockQtyInput = document.getElementById('stockQtyCalc2');
+const perUnitCostSpan = document.getElementById('perUnitCostPrice');
+function updatePerUnitCost() {
+  const total = parseFloat(totalCostInput.value) || 0;
+  const qty = parseFloat(stockQtyInput.value) || 0;
+  perUnitCostSpan.textContent = (qty > 0) ? (total / qty).toFixed(2) : '0';
+}
+totalCostInput && totalCostInput.addEventListener('input', updatePerUnitCost);
+stockQtyInput && stockQtyInput.addEventListener('input', updatePerUnitCost);
+
+// Auto-calculate per-unit cost price from total quantity price and stock
+const totalQuantityPriceInput = document.getElementById('totalQuantityPrice');
+const stockQtyCalcInput = document.getElementById('stockQtyCalc');
+const costPriceInput = document.getElementById('costPrice');
+function updateCostPriceFromTotal() {
+  const total = parseFloat(totalQuantityPriceInput.value) || 0;
+  const qty = parseFloat(stockQtyCalcInput.value) || 0;
+  costPriceInput.value = (qty > 0) ? (total / qty).toFixed(2) : '';
+}
+totalQuantityPriceInput && totalQuantityPriceInput.addEventListener('input', updateCostPriceFromTotal);
+stockQtyCalcInput && stockQtyCalcInput.addEventListener('input', updateCostPriceFromTotal);
+</script>
 </body>
 
 </html>

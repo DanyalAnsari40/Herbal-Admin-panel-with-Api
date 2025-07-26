@@ -165,7 +165,8 @@ app.get('/logout', (req, res) => {
 
 // Landing Page
 app.get('/', (req, res) => {
-  res.render('index', { message: null });
+  const message = req.query.success ? 'آرڈ درج ہوگیا ہے' : null;
+  res.render('index', { message });
 });
 // orders
 app.post('/order', async (req, res) => {
@@ -174,8 +175,8 @@ app.post('/order', async (req, res) => {
     if (!name || !phone) {
       return res.render('index', { message: 'Name and phone are required' });
     }
-    await LandingOrder.create({ name, phone }); // use the simple schema
-    res.render('index', { message: 'آرڈ درج ہوگیا ہے' });
+    await LandingOrder.create({ name, phone });
+    res.redirect('/?success=1');
   } catch (err) {
     console.error(err);
     res.render('index', { message: 'آرڈ درج نہیں ہوا ' });
@@ -308,8 +309,10 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
           { callStatus: null },
           { callStatus: "Pending" }
         );
-      } else {
+      } else if (["Answered", "Declined", "Cancelled", "Not-Attend", "Power Off"].includes(req.query.status)) {
         query.callStatus = req.query.status;
+      } else {
+        // fallback: ignore unknown status
       }
     }
 
@@ -322,6 +325,33 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       ];
     } else if (req.query.handle === "Handled") {
       query.isInProgress = true;
+    }
+
+    // Mix Order logic
+    let mix = req.query.mix === '1';
+    let mixPairs = [];
+    if (mix) {
+      // First, find all unique (name, phone) pairs in the current filtered result
+      const baseOrders = await LandingOrder.find(query, { name: 1, phone: 1 });
+      const seen = new Set();
+      mixPairs = baseOrders
+        .map(o => `${o.name}||${o.phone}`)
+        .filter((pair, idx, arr) => {
+          if (seen.has(pair)) return false;
+          seen.add(pair);
+          return true;
+        })
+        .map(pair => {
+          const [name, phone] = pair.split('||');
+          return { name, phone };
+        });
+      // Now, show all orders that match any of those pairs
+      if (mixPairs.length > 0) {
+        query.$or = mixPairs.map(({ name, phone }) => ({ name, phone }));
+      } else {
+        // If no pairs, show nothing
+        query._id = null;
+      }
     }
 
     const totalOrders = await LandingOrder.countDocuments(query);
@@ -343,7 +373,8 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       selectedDate,
       search,
       currentPage,
-      totalPages
+      totalPages,
+      mix // pass mix to EJS
     });
   } catch (err) {
     console.error(err);
@@ -405,7 +436,7 @@ app.post('/admin/orders/add-review', isAuthenticated, hasPermission('orders'), a
 });
 app.post('/admin/orders/update-call-status', isAuthenticated, hasPermission('orders'), async (req, res) => {
   const { orderId, callStatus } = req.body;
-  if (!['Answered', 'Declined', 'Pending'].includes(callStatus)) return res.redirect('/admin/orders');
+  if (!['Answered', 'Declined', 'Pending', 'Cancelled', 'Not-Attend', 'Power Off'].includes(callStatus)) return res.redirect('/admin/orders');
 
   try {
     const order = await LandingOrder.findById(orderId);
@@ -1150,6 +1181,18 @@ app.get('/admin/attendance-export/:employeeId', isAuthenticated, async (req, res
     res.send(csv);
   } catch (err) {
     res.status(500).send('Failed to export CSV');
+  }
+});
+
+// Get today's attendance for the logged-in user
+app.get('/admin/attendence/today', isAuthenticated, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const attendance = await Attendance.findOne({ user: req.session.user.id, date: today });
+    res.json({ success: true, attendance });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to fetch today\'s attendance.' });
   }
 });
 

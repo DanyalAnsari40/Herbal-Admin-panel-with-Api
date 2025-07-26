@@ -11,10 +11,10 @@ const landingOrderSchema = new mongoose.Schema({
   handledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
   review: { type: String }, // Add this line
   callStatus: {
-  type: String,
-  enum: ['Answered', 'Declined', 'Pending'],
-  default: 'Pending'
-}
+    type: String,
+    enum: ['Answered', 'Declined', 'Pending', 'Cancelled', 'Not-Attend', 'Power Off'],
+    default: 'Pending'
+  }
 
 });
 

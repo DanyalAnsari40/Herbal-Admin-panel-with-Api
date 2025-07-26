@@ -90,6 +90,55 @@
         .toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
+    // Restore attendance state on page load
+    async function restoreAttendanceState() {
+      try {
+        const res = await fetch('/admin/attendence/today');
+        const data = await res.json();
+        if (data.success && data.attendance) {
+          if (data.attendance.checkIn) {
+            startTime = new Date(data.attendance.checkIn);
+            checkInTime.textContent = `Checked in at: ${formatTime(startTime)}`;
+            checkInBtn.disabled = true;
+            checkOutBtn.disabled = false;
+            if (data.attendance.checkOut) {
+              endTime = new Date(data.attendance.checkOut);
+              checkOutTime.textContent = `Checked out at: ${formatTime(endTime)}`;
+              checkOutBtn.disabled = true;
+              checkInBtn.disabled = true;
+              timerDisplay.textContent = data.attendance.totalTime || formatDuration(endTime - startTime);
+            } else {
+              // Not checked out yet, start timer
+              timerDisplay.textContent = '00:00:00';
+              timerInterval = setInterval(() => {
+                const now = new Date();
+                timerDisplay.textContent = formatDuration(now - startTime);
+              }, 1000);
+            }
+          } else {
+            // Not checked in yet
+            checkInBtn.disabled = false;
+            checkOutBtn.disabled = true;
+            checkInTime.textContent = '';
+            checkOutTime.textContent = '';
+            timerDisplay.textContent = '';
+          }
+        } else {
+          // No attendance record for today
+          checkInBtn.disabled = false;
+          checkOutBtn.disabled = true;
+          checkInTime.textContent = '';
+          checkOutTime.textContent = '';
+          timerDisplay.textContent = '';
+        }
+      } catch (err) {
+        // fallback: enable check-in
+        checkInBtn.disabled = false;
+        checkOutBtn.disabled = true;
+      }
+    }
+    restoreAttendanceState();
+
     checkInBtn.addEventListener('click', async () => {
       if (timerInterval) return;
       checkInBtn.disabled = true;
