@@ -15,6 +15,8 @@ const landingOrderSchema = new mongoose.Schema({
     enum: ['Answered', 'Declined', 'Pending', 'Cancelled', 'Not-Attend', 'Power Off'],
     default: 'Pending'
   }
+  
+  
 
 });
 

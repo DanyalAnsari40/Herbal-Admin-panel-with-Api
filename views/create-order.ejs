@@ -37,9 +37,9 @@
 
           <nav class="flex flex-col space-y-2">
             <a href="/admin"
-            class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'admin' ? 'bg-white/20 border-l-4 border-white' : '' %>">
-            <i class="fas fa-home w-5 mr-3"></i> <span class="sidebar-text">Dashboard</span>
-          </a>
+              class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'admin' ? 'bg-white/20 border-l-4 border-white' : '' %>">
+              <i class="fas fa-home w-5 mr-3"></i> <span class="sidebar-text">Dashboard</span>
+            </a>
             <% if (user.permissions.includes('employee-management')) { %>
               <a href="/admin/employee-management"
                 class="flex items-center px-4 py-2 rounded hover:bg-white/10 transition <%= currentRoute === 'employee-management' ? 'bg-white/20 border-l-4 border-white' : '' %>">
@@ -230,402 +230,159 @@
                       <div class="mb-8">
                         <h2 class="text-4xl font-bold text-gray-800 mb-2">Create New Order</h2>
                         <p class="text-gray-600 text-lg">Add a new customer order with detailed information</p>
-                      </div>
-
-                      <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-                        <div class="flex items-center mb-6">
-                          <div class="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl mr-4">
-                            <i class="fas fa-edit text-white text-xl"></i>
-                          </div>
-                          <h3 class="text-2xl font-semibold text-gray-800">Order Details</h3>
-                        </div>
-
-                        <form action="/admin/create-order" method="POST" class="space-y-6" id="orderForm">
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Product Selection -->
-                            <div>
-                              <label for="productId" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-box mr-2 text-green-500"></i>Product *
-                              </label>
-                              <select id="productId" name="productId" required
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white">
-                                <option value="" disabled selected>Select Product</option>
-                                <% products.forEach(p=> { %>
-                                  <option value="<%= p._id %>" data-stock="<%= p.stock %>">
-                                    <%= p.name %> (Stock: <%= p.stock %>)
-                                  </option>
-                                  <% }) %>
-                              </select>
-                            </div>
-
-                            <!-- Available Stock -->
-                            <div>
-                              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-cubes mr-2 text-green-500"></i>Available Stock
-                              </label>
-                              <input type="text" id="availableStock" readonly
-                                class="w-full p-4 bg-gray-100 border border-gray-200 rounded-xl" value="—">
-                            </div>
-
-                            <!-- Customer Info -->
-                            <div>
-                              <label for="customerName" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-user mr-2 text-green-500"></i>Customer Name *
-                              </label>
-                              <input type="text" id="customerName" name="customerName" required
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter customer name">
-                            </div>
-                            <div>
-                              <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-envelope mr-2 text-green-500"></i>Email Address
-                              </label>
-                              <input type="email" id="email" name="email"
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter email address">
-                            </div>
-                            <div>
-                              <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-phone mr-2 text-purple-500"></i>Phone Number *
-                              </label>
-                              <input type="tel" id="phone" name="phone" required
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter phone number">
-                            </div>
-
-                            <!-- Pick-up Method -->
-                            <div>
-                              <label for="pickupMethod" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-hand-holding-box mr-2 text-pink-500"></i>Pick-up Method *
-                              </label>
-                              <select id="pickupMethod" name="pickupMethod" required
-                                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200">
-                                <option value="" disabled selected>Select pick-up method</option>
-                                <option value="delivery">Delivery</option>
-                                <option value="office">Pick from Office</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          <!-- Delivery Fields -->
-                          <div id="deliveryFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-                            <div>
-                              <label for="service" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-truck mr-2 text-teal-500"></i>Delivery Service
-                              </label>
-                              <select id="service" name="service"
-                                class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200">
-                                <option disabled selected>Choose the Delivery Service</option>
-                                <% ['TCS','M&P','Leopard','PT'].forEach(s=> { %>
-                                  <option value="<%= s %>">
-                                    <%= s %>
-                                  </option>
-                                  <% }); %>
-                              </select>
-                            </div>
-
-                            <div>
-                              <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>Address
-                              </label>
-                              <input type="text" id="address" name="address"
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter address">
-                            </div>
-
-                            <div>
-                              <label for="postalCode" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-mail-bulk mr-2 text-indigo-500"></i>Postal Code
-                              </label>
-                              <input type="text" id="postalCode" name="postalCode"
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter postal code">
-                            </div>
-
-                            <div>
-                              <label for="city" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-city mr-2 text-orange-500"></i>City
-                              </label>
-                              <input type="text" id="city" name="city"
-                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                                placeholder="Enter city">
-                            </div>
-                          </div>
-
-                          <!-- Quantity -->
-                          <div class="pt-6">
-                            <label for="quantity" class="block text-sm font-semibold text-gray-700 mb-2">
-                              <i class="fas fa-sort-numeric-up mr-2 text-teal-500"></i>Quantity *
-                            </label>
-                            <input type="number" id="quantity" name="quantity" min="1" value="1" required
-                              class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-gray-50 focus:bg-white">
-                          </div>
-
-                          <!-- Submit Button -->
-                          <div class="pt-6">
-                            <button type="submit"
-                              class="w-full bg-gradient-to-r from-green-600 to-indigo-600 text-white p-4 rounded-xl font-semibold hover:from-green-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                              <i class="fas fa-plus-circle mr-2"></i>
-                              Create Order
-                            </button>
-                          </div>
-                        </form>
-
-                      </div>
-                    </section>
-
-                    <!-- Order List -->
-                    <section>
-                      <div class="mb-8">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Custom Order List</h2>
-                        <p class="text-gray-600 text-lg">View all orders created through the admin panel</p>
-                      </div>
-                      <!-- Filter + Search + Date -->
-                      <div
-                        class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
-
-                        <!-- Search -->
-                        <form method="GET" action="/admin/create-order" class="w-full md:w-1/2 flex space-x-3">
-                          <div class="relative w-full">
-                            <input type="text" name="search" value="<%= search || '' %>"
-                              placeholder="🔍 Search by name or phone..."
-                              class="w-full p-4 pl-12 border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-green-400 transition">
-                            <i
-                              class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                          </div>
-                          <% if (search || selectedService || start || end) { %>
-                            <a href="/admin/create-order"
-                              class="flex items-center justify-center px-4 py-2 bg-green-100 text-green-700 rounded-xl shadow hover:bg-green-200 transition">
-                              <i class="fas fa-times mr-2"></i> Clear
-                            </a>
-                            <% } %>
-                        </form>
-
-                        <!-- Service & Date Filter -->
-                        <form method="GET" action="/admin/create-order"
-                          class="flex flex-wrap items-center space-x-3 bg-white p-3 rounded-xl shadow border">
-                          <label class="text-gray-700 font-semibold flex items-center space-x-1">
-                            <i class="fas fa-filter text-green-600"></i><span>Service:</span>
-                          </label>
-                          <div class="relative">
-                            <select name="service" onchange="this.form.submit()"
-                              class="appearance-none border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 shadow hover:border-green-400 cursor-pointer">
-                              <option value="">All</option>
-                              <option value="TCS" <%=selectedService==='TCS' ? 'selected' : '' %>>TCS</option>
-                              <option value="M&P" <%=selectedService==='M&P' ? 'selected' : '' %>>M&P</option>
-                              <option value="Leopard" <%=selectedService==='Leopard' ? 'selected' : '' %>>Leopard
-                              </option>
-                              <option value="PT" <%=selectedService==='PT' ? 'selected' : '' %>>PT</option>
-                            </select>
-                            <div
-                              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
-                              <i class="fas fa-chevron-down"></i>
-                            </div>
-                          </div>
-
-                          <!-- Date Range -->
-                          <input type="date" name="start" value="<%= start || '' %>"
-                            class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 shadow transition ml-3" />
-                          <span class="mx-1 text-gray-500">to</span>
-                          <input type="date" name="end" value="<%= end || '' %>"
-                            class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 shadow transition" />
-                          <button type="submit"
-                            class="ml-3 px-4 py-2 bg-gradient-to-r from-green-600 to-indigo-600 text-white rounded-xl shadow hover:from-green-700 hover:to-indigo-700 transition">
-                            <i class="fas fa-filter mr-2"></i>Apply
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <a href="/admin/orders"
+                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg transform hover:scale-105 transition-all duration-200">
+                            <i class="fas fa-shipping-fast mr-3 text-2xl"></i>
+                            TCS
+                          </a>
+                          <button onclick="openLeopardsModal()"
+                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
+                            <i class="fas fa-truck mr-3 text-2xl"></i>
+                            Leopards
                           </button>
-                        </form>
-
+                          <a href="/admin/product-management"
+                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-lg transform hover:scale-105 transition-all duration-200">
+                            <i class="fas fa-shipping-fast mr-3 text-2xl"></i>
+                            M&P
+                          </a>
+                          <a href="/admin/tracking"
+                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 shadow-lg transform hover:scale-105 transition-all duration-200">
+                            <i class="fas fa-plane mr-3 text-2xl"></i>
+                            FedEx
+                          </a>
+                        </div>
                       </div>
 
 
 
-                      <% if (orders.length===0) { %>
-                        <div class="bg-white p-12 rounded-2xl shadow-lg border border-gray-100 text-center">
-                          <div class="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-clipboard-list text-3xl text-gray-400"></i>
-                          </div>
-                          <h3 class="text-xl font-semibold text-gray-700 mb-2">No Custom Orders Yet</h3>
-                          <p class="text-gray-500">Orders created through this form will appear here</p>
+                      <!-- Order List -->
+                      <section>
+                        <div class="mb-8">
+                          <h2 class="text-3xl font-bold text-gray-800 mb-2">Courier Results & Orders</h2>
+                          <p class="text-gray-600 text-lg">View courier data and orders from different services</p>
                         </div>
-                        <% } else { %>
-                          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100">
-                              <div class="flex items-center justify-between">
+
+                        <!-- Courier Tabs -->
+                        <div class="mb-8">
+                          <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8">
+                              <button onclick="showTab('tcs')" id="tcs-tab"
+                                class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
+                                <i class="fas fa-shipping-fast mr-2"></i>TCS
+                              </button>
+                              <button onclick="showTab('leopards')" id="leopards-tab"
+                                class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
+                                <i class="fas fa-truck mr-2"></i>Leopards
+                              </button>
+                              <button onclick="showTab('mp')" id="mp-tab"
+                                class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
+                                <i class="fas fa-shipping-fast mr-2"></i>M&P
+                              </button>
+                              <button onclick="showTab('fedex')" id="fedex-tab"
+                                class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
+                                <i class="fas fa-plane mr-2"></i>FedEx
+                              </button>
+                            </nav>
+                          </div>
+                        </div>
+
+                        <!-- Tab Content -->
+                        <div id="tab-content" class="space-y-6">
+                          <!-- TCS Tab -->
+                          <div id="tcs-content" class="tab-content">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-shipping-fast mr-2 text-orange-500"></i>TCS Orders
+                              </h3>
+                              <p class="text-gray-600">TCS courier service data will be displayed here.</p>
+                            </div>
+                          </div>
+
+                          <!-- Leopards Tab -->
+                          <div id="leopards-content" class="tab-content hidden">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                              <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-xl font-semibold text-gray-800">
-                                  <i class="fas fa-list mr-2 text-green-500"></i>
-                                  Custom Orders (<%= orders.length %>)
+                                  <i class="fas fa-truck mr-2 text-green-500"></i>Leopards Shipment Data
                                 </h3>
-                                <div class="flex items-center space-x-2 text-sm text-gray-500">
-                                  <i class="fas fa-clock"></i>
-                                  <span>Last updated: <%= new Date().toLocaleString() %></span>
+                                <button onclick="fetchLeopardsData()"
+                                  class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors">
+                                  <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+                                </button>
+                              </div>
+
+                              <!-- Filters -->
+                              <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-semibold text-gray-700 mb-3">Filters</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                                    <input type="date" id="from-date" value="2019-12-31"
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                                    <input type="date" id="to-date" value="2025-12-31"
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                                    <input type="text" id="search-filter" placeholder="Search shipments..."
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                  </div>
+                                </div>
+                                <div class="mt-3">
+                                  <button onclick="applyFilters()"
+                                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                                  </button>
+                                  <button onclick="clearFilters()"
+                                    class="ml-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-times mr-2"></i>Clear
+                                  </button>
+                                </div>
+                              </div>
+
+                              <!-- Results -->
+                              <div id="leopards-result" class="overflow-x-auto">
+                                <div class="text-center text-gray-500 py-8">
+                                  <i class="fas fa-database text-4xl mb-3"></i>
+                                  <p>Click "Refresh Data" to load Leopards shipment information</p>
                                 </div>
                               </div>
                             </div>
+                          </div>
 
-                            <div class="overflow-x-auto">
-                          <table class="w-full">
-  <thead>
-    <tr class="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 uppercase text-sm font-semibold">
-      <th class="py-4 px-6 text-left"><i class="fas fa-user mr-2"></i>Customer</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-phone mr-2"></i>Phone</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-city mr-2"></i>City</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-sort-numeric-up mr-2"></i>Quantity</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-box mr-2"></i>Product</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-truck mr-2"></i>Service</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-barcode mr-2"></i>Tracking ID</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-shipping-fast"></i>track</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-info-circle mr-2"></i>More</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-wrench mr-2"></i>Actions</th>
-      <th class="py-4 px-6 text-left"><i class="fas fa-undo-alt mr-2"></i>Return</th>
-    </tr>
-  </thead>
-  <tbody class="text-gray-700">
-  <% orders.forEach((order, index)=> { %>
-  <tr class="border-b border-gray-100 hover:bg-green-50 transition-colors duration-200 <%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
-    <td class="py-4 px-6 font-medium">
-      <div class="flex items-center">
-        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-          <i class="fas fa-user text-green-600 text-sm"></i>
-        </div>
-        <%= order.customerName %>
-      </div>
-    </td>
-    
-    <td class="py-4 px-6">
-      <div class="flex items-center">
-        <i class="fas fa-phone text-purple-500 mr-2"></i>
-        <%= order.phone %>
-      </div>
-    </td>
-
-    <td class="py-4 px-6">
-      <div class="flex items-center">
-        <i class="fas fa-city text-orange-500 mr-2"></i>
-        <%= order.city || '-' %>
-      </div>
-    </td>
-
-    <td class="py-4 px-6">
-      <div class="flex items-center">
-        <i class="fas fa-sort-numeric-up text-teal-500 mr-2"></i>
-        <%= order.quantity %>
-      </div>
-    </td>
-
-    <td class="py-4 px-6 font-medium">
-      <div class="flex items-center">
-        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-          <i class="fas fa-box"></i>
-        </div>
-        <%= order.product?.name || 'N/A' %>
-      </div>
-    </td>
-
-    <td class="py-4 px-6 font-medium">
-      <div class="flex items-center">
-        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-          <i class="fa-solid fa-truck"></i>
-        </div>
-        <%= order.service %>
-      </div>
-    </td>
-
-    <td class="py-4 px-6">
-      <% if (order.pickupMethod==='office' ) { %>
-        <span class="text-blue-600 font-semibold">Pickup from Office</span>
-      <% } else if (!order.trackingId) { %>
-        <button class="text-green-600 underline" onclick="openTrackingModal('<%= order._id %>')">Add ID</button>
-      <% } else { %>
-        <span class="text-gray-700">Original ID: <%= order.trackingId %></span>
-      <% } %>
-    </td>
-
-    <td class="py-4 px-6">
-      <% if (order.pickupMethod==='office' ) { %>
-        <span class="text-gray-400 italic">N/A</span>
-      <% } else { %>
-        <a href="/admin/tracking?p_id=<%= order.trackingId || '' %>&service=<%= order.service || '' %>"
-          class="text-green-600 hover:underline flex items-center space-x-1">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>Track</span>
-        </a>
-      <% } %>
-    </td>
-
-    <td class="py-4 px-6">
-      <button class="text-indigo-600 hover:underline"
-        data-order='<%- JSON.stringify(order).replace(/' /g, "&#39;" ) %>'
-        onclick="showMoreDetails(this)">
-        See More
-      </button>
-    </td>
-
-    <td class="py-4 px-6 text-center">
-      <form action="/admin/create-order/delete/<%= order._id %>" method="POST"
-        onsubmit="return confirm('Are you sure you want to delete this order?');">
-        <button type="submit" class="text-red-600 hover:text-red-800">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </form>
-    </td>
-
-    <td class="py-4 px-6 text-center">
-      <% if(order.trackingId === "Order Returned") { %>
-        <span class="text-red-600 font-semibold">Returned</span>
-      <% } else if(order.pickupMethod==='office' || order.trackingId) { %>
-        <button onclick="openReturnModal('<%= order._id %>')"
-          class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
-          Return
-        </button>
-      <% } else { %>
-        <span class="text-gray-400 italic">Dispatch First</span>
-      <% } %>
-    </td>
-
-  </tr>
-  <% }) %>
-</tbody>
-
-</table>
-
+                          <!-- M&P Tab -->
+                          <div id="mp-content" class="tab-content hidden">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-shipping-fast mr-2 text-blue-500"></i>M&P Orders
+                              </h3>
+                              <p class="text-gray-600">M&P courier service data will be displayed here.</p>
                             </div>
                           </div>
 
-
-                          <!-- Pagination -->
-                          <div class="mt-6 flex justify-center items-center space-x-1">
-                            <% if (currentPage> 1) { %>
-                              <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&service=<%= selectedService %>"
-                                class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow transition">Previous</a>
-                              <% } %>
-
-                                <% let startPage=Math.max(1, currentPage - 2); let endPage=Math.min(totalPages,
-                                  currentPage + 2); if (startPage> 1) { %>
-                                  <a href="?page=1&search=<%= search %>&service=<%= selectedService %>"
-                                    class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">1</a>
-                                  <% if (startPage> 2) { %><span class="px-2">...</span>
-                                    <% } %>
-                                      <% } for (let i=startPage; i <=endPage; i++) { %>
-                                        <a href="?page=<%= i %>&search=<%= search %>&service=<%= selectedService %>"
-                                          class="px-3 py-1 rounded-full <%= i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>">
-                                          <%= i %>
-                                        </a>
-                                        <% } if (endPage < totalPages) { %>
-                                          <% if (endPage < totalPages - 1) { %><span class="px-2">...</span>
-                                            <% } %>
-                                              <a href="?page=<%= totalPages %>&search=<%= search %>&service=<%= selectedService %>"
-                                                class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
-                                                <%= totalPages %>
-                                              </a>
-                                              <% } %>
-
-                                                <% if (currentPage < totalPages) { %>
-                                                  <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&service=<%= selectedService %>"
-                                                    class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow transition">Next</a>
-                                                  <% } %>
+                          <!-- FedEx Tab -->
+                          <div id="fedex-content" class="tab-content hidden">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-plane mr-2 text-purple-500"></i>FedEx Orders
+                              </h3>
+                              <p class="text-gray-600">FedEx courier service data will be displayed here.</p>
+                            </div>
                           </div>
-                          <% } %>
-                    </section>
+                        </div>
+
+
+
+
+
+
+
+
+                      </section>
               </main>
 
               <!-- Footer -->
@@ -677,19 +434,237 @@
           </div>
         </div>
         <!-- Return Modal -->
-<div id="returnModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl">
-    <h2 class="text-xl font-bold text-gray-800 mb-4">Mark as Returned</h2>
-    <p class="text-gray-600 mb-6">Are you sure you want to mark this order as returned? 
-    This will update the tracking ID and restore the quantity back to stock.</p>
-    <div class="flex justify-end space-x-4">
-      <button onclick="closeReturnModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
-      <form id="returnForm" method="POST">
-        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Yes, Return</button>
-      </form>
-    </div>
-  </div>
-</div>
+        <div id="returnModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Mark as Returned</h2>
+            <p class="text-gray-600 mb-6">Are you sure you want to mark this order as returned?
+              This will update the tracking ID and restore the quantity back to stock.</p>
+            <div class="flex justify-end space-x-4">
+              <button onclick="closeReturnModal()"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
+              <form id="returnForm" method="POST">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Yes,
+                  Return</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leopards Courier Booking Modal -->
+        <div id="leopardsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-truck mr-3 text-green-600"></i>
+                Leopards Courier Booking
+              </h2>
+              <button onclick="closeLeopardsModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="leopardsForm" class="space-y-6">
+              <!-- API Credentials (Hidden) -->
+              <input type="hidden" id="api_key" value="c7ab1d5f6b35f23b496c9cc24d4715c1">
+              <input type="hidden" id="api_password" value="123456">
+
+              <!-- Packet Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Packet Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Weight (Grams) *</label>
+                    <input type="number" id="booked_packet_weight" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">No. of Pieces *</label>
+                    <input type="number" id="booked_packet_no_piece" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Collection Amount</label>
+                    <input type="number" id="booked_packet_collect_amount"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Order ID</label>
+                    <input type="text" id="booked_packet_order_id"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Shipment ID</label>
+                    <input type="number" id="shipment_id" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Volumetric Weight (Optional) -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Volumetric Weight (Optional)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Width</label>
+                    <input type="number" id="booked_packet_vol_weight_w"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Height</label>
+                    <input type="number" id="booked_packet_vol_weight_h"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Length</label>
+                    <input type="number" id="booked_packet_vol_weight_l"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cities -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800">Cities</h3>
+                  <button type="button" onclick="loadCities()"
+                    class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt mr-1"></i>Load Cities
+                  </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Origin City *</label>
+                    <select id="origin_city" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select Origin City</option>
+                      <option value="self">Self (Your City)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Destination City *</label>
+                    <select id="destination_city" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select Destination City</option>
+                      <option value="self">Self (Your City)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shipper Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Shipper Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+                    <input type="text" id="shipment_name_eng" value="self"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input type="email" id="shipment_email" value="self"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                    <input type="tel" id="shipment_phone" value="self"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                    <input type="text" id="shipment_address" value="self"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Consignee Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Consignee Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Name *</label>
+                    <input type="text" id="consignment_name_eng" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input type="email" id="consignment_email"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone *</label>
+                    <input type="tel" id="consignment_phone" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone 2</label>
+                    <input type="tel" id="consignment_phone_two"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone 3</label>
+                    <input type="tel" id="consignment_phone_three"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address *</label>
+                    <input type="text" id="consignment_address" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Special Instructions</label>
+                    <textarea id="special_instructions" rows="3"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Shipment Type</label>
+                    <input type="text" id="shipment_type" value="overnight"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Return Address</label>
+                    <input type="text" id="return_address"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Return City</label>
+                    <input type="number" id="return_city"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Is VPC</label>
+                    <select id="is_vpc"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-end space-x-4 pt-6">
+                <button type="button" onclick="closeLeopardsModal()"
+                  class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-colors">
+                  Cancel
+                </button>
+                <button type="submit"
+                  class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-200">
+                  <i class="fas fa-paper-plane mr-2"></i>
+                  Book Package
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <script>
           // Product selection and stock management
@@ -779,7 +754,7 @@
               alert('Failed to update tracking ID');
             }
           }
-    // ------------------------
+          // ------------------------
           function showMoreDetails(btn) {
             const order = JSON.parse(btn.getAttribute('data-order'));
             const detailsList = document.getElementById('detailsList');
@@ -828,17 +803,460 @@
 
 
 
-           function openReturnModal(orderId) {
-    const form = document.getElementById('returnForm');
-    form.action = `/admin/create-order/return/${orderId}`;
-    document.getElementById('returnModal').classList.remove('hidden');
-    document.getElementById('returnModal').classList.add('flex');
-  }
+          function openReturnModal(orderId) {
+            const form = document.getElementById('returnForm');
+            form.action = `/admin/create-order/return/${orderId}`;
+            document.getElementById('returnModal').classList.remove('hidden');
+            document.getElementById('returnModal').classList.add('flex');
+          }
 
-  function closeReturnModal() {
-    document.getElementById('returnModal').classList.remove('flex');
-    document.getElementById('returnModal').classList.add('hidden');
-  }
+          function closeReturnModal() {
+            document.getElementById('returnModal').classList.remove('flex');
+            document.getElementById('returnModal').classList.add('hidden');
+          }
+
+          // Leopards Modal Functions
+          function openLeopardsModal() {
+            document.getElementById('leopardsModal').classList.remove('hidden');
+            document.getElementById('leopardsModal').classList.add('flex');
+
+            // Load cities with a small delay to ensure modal is fully rendered
+            setTimeout(() => {
+              loadCities();
+            }, 100);
+          }
+
+          function closeLeopardsModal() {
+            document.getElementById('leopardsModal').classList.remove('flex');
+            document.getElementById('leopardsModal').classList.add('hidden');
+          }
+
+          // Load cities from Leopards API
+          async function loadCities() {
+            try {
+              console.log('Loading cities...');
+              const response = await fetch('https://merchantapistaging.leopardscourier.com/api/getAllCities/format/json/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  api_key: 'c7ab1d5f6b35f23b496c9cc24d4715c1',
+                  api_password: '123456'
+                })
+              });
+
+              console.log('Response status:', response.status);
+              const data = await response.json();
+              console.log('API Response:', data);
+
+              if (data.status === 1 && data.city_list) {
+                console.log('Cities found:', data.city_list.length);
+                populateCityDropdowns(data.city_list);
+              } else {
+                console.error('No cities found in response:', data);
+              }
+            } catch (error) {
+              console.error('Error loading cities:', error);
+            }
+          }
+
+          // Populate city dropdowns
+          function populateCityDropdowns(cities) {
+            console.log('Populating city dropdowns with:', cities);
+
+            if (cities.length > 0) {
+              console.log('First city object structure:', cities[0]);
+            }
+
+            const originSelect = document.getElementById('origin_city');
+            const destSelect = document.getElementById('destination_city');
+
+            if (!originSelect || !destSelect) {
+              console.error('City dropdown elements not found!');
+              return;
+            }
+
+            console.log('Found dropdown elements:', { originSelect, destSelect });
+
+            // Clear existing options except "self"
+            originSelect.innerHTML = '<option value="">Select Origin City</option><option value="self">Self (Your City)</option>';
+            destSelect.innerHTML = '<option value="">Select Destination City</option><option value="self">Self (Your City)</option>';
+
+            cities.forEach(city => {
+              console.log('Adding city:', city);
+
+              // Try different possible field names for city ID and name
+              const cityId = city.city_id || city.id || city.cityId || city.cityid;
+              const cityName = city.city_name || city.name || city.cityName || city.cityname;
+
+              if (cityId && cityName) {
+                const originOption = document.createElement('option');
+                originOption.value = cityId;
+                originOption.textContent = cityName;
+                originSelect.appendChild(originOption);
+
+                const destOption = document.createElement('option');
+                destOption.value = cityId;
+                destOption.textContent = cityName;
+                destSelect.appendChild(destOption);
+              } else {
+                console.warn('City object missing required fields:', city);
+              }
+            });
+
+            console.log('City dropdowns populated. Origin options:', originSelect.options.length, 'Destination options:', destSelect.options.length);
+          }
+
+          // Handle Leopards form submission
+          document.getElementById('leopardsForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = {
+              api_key: document.getElementById('api_key').value,
+              api_password: document.getElementById('api_password').value,
+              booked_packet_weight: parseInt(document.getElementById('booked_packet_weight').value),
+              booked_packet_vol_weight_w: document.getElementById('booked_packet_vol_weight_w').value || '',
+              booked_packet_vol_weight_h: document.getElementById('booked_packet_vol_weight_h').value || '',
+              booked_packet_vol_weight_l: document.getElementById('booked_packet_vol_weight_l').value || '',
+              booked_packet_no_piece: parseInt(document.getElementById('booked_packet_no_piece').value),
+              booked_packet_collect_amount: document.getElementById('booked_packet_collect_amount').value || 0,
+              booked_packet_order_id: document.getElementById('booked_packet_order_id').value || '',
+              origin_city: document.getElementById('origin_city').value,
+              destination_city: document.getElementById('destination_city').value,
+              shipment_id: parseInt(document.getElementById('shipment_id').value),
+              shipment_name_eng: document.getElementById('shipment_name_eng').value,
+              shipment_email: document.getElementById('shipment_email').value,
+              shipment_phone: document.getElementById('shipment_phone').value,
+              shipment_address: document.getElementById('shipment_address').value,
+              consignment_name_eng: document.getElementById('consignment_name_eng').value,
+              consignment_email: document.getElementById('consignment_email').value || '',
+              consignment_phone: document.getElementById('consignment_phone').value,
+              consignment_phone_two: document.getElementById('consignment_phone_two').value || '',
+              consignment_phone_three: document.getElementById('consignment_phone_three').value || '',
+              consignment_address: document.getElementById('consignment_address').value,
+              special_instructions: document.getElementById('special_instructions').value || '',
+              shipment_type: document.getElementById('shipment_type').value,
+              return_address: document.getElementById('return_address').value || '',
+              return_city: document.getElementById('return_city').value || '',
+              is_vpc: parseInt(document.getElementById('is_vpc').value)
+            };
+
+            try {
+              const response = await fetch('https://merchantapistaging.leopardscourier.com/api/bookPacket/format/json/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+              });
+
+              const result = await response.json();
+
+              if (result.status === 1) {
+                alert('Package booked successfully! Tracking ID: ' + (result.tracking_id || 'N/A'));
+                closeLeopardsModal();
+                // Reset form
+                document.getElementById('leopardsForm').reset();
+              } else {
+                alert('Error booking package: ' + (result.error || 'Unknown error'));
+              }
+            } catch (error) {
+              console.error('Error submitting form:', error);
+              alert('Error submitting form. Please try again.');
+            }
+          });
+
+          // Tab Management Functions
+          function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.add('hidden'));
+
+            // Remove active state from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+              button.classList.remove('border-green-500', 'text-green-600');
+              button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab content
+            const selectedContent = document.getElementById(tabName + '-content');
+            if (selectedContent) {
+              selectedContent.classList.remove('hidden');
+            }
+
+            // Activate selected tab button
+            const selectedButton = document.getElementById(tabName + '-tab');
+            if (selectedButton) {
+              selectedButton.classList.remove('border-transparent', 'text-gray-500');
+              selectedButton.classList.add('border-green-500', 'text-green-600');
+            }
+
+            // Auto-load data for specific tabs
+            if (tabName === 'leopards') {
+              // Auto-load Leopards data when tab is opened
+              setTimeout(() => {
+                fetchLeopardsData();
+              }, 100);
+            }
+          }
+
+          // Leopards API Integration
+          let leopardsData = [];
+          let filteredData = [];
+
+          async function fetchLeopardsData() {
+            const resultDiv = document.getElementById('leopards-result');
+            resultDiv.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-green-500 mb-3"></i><p>Loading shipment data...</p></div>';
+
+            try {
+              const params = new URLSearchParams({
+                api_key: 'c7ab1d5f6b35f23b496c9cc24d4715c1',
+                api_password: '123456',
+                from_date: document.getElementById('from-date').value,
+                to_date: document.getElementById('to-date').value
+              });
+
+              const listResponse = await fetch(`https://merchantapistaging.leopardscourier.com/api/getBookedPacketLastStatus/format/json/?${params.toString()}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+              });
+
+              const listData = await listResponse.json();
+
+              if (!listData || !listData.packet_list || listData.packet_list.length === 0) {
+                resultDiv.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><p>No booked packets found.</p></div>';
+                return;
+              }
+
+              // Extract unique order IDs
+              const orderIds = [...new Set(
+                listData.packet_list
+                  .map(packet => packet.booked_packet_order_id)
+                  .filter(id => id && id.trim() !== "")
+              )];
+
+              if (orderIds.length === 0) {
+                resultDiv.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><p>No valid order IDs found in booked packets.</p></div>';
+                return;
+              }
+
+              // Helper: split array into chunks of max size
+              function chunkArray(arr, size) {
+                const chunks = [];
+                for (let i = 0; i < arr.length; i += size) {
+                  chunks.push(arr.slice(i, i + size));
+                }
+                return chunks;
+              }
+
+              const chunks = chunkArray(orderIds, 100); // max 100 per API call
+              let allData = [];
+
+              for (const chunk of chunks) {
+                const detailPayload = {
+                  api_key: 'c7ab1d5f6b35f23b496c9cc24d4715c1',
+                  api_password: '123456',
+                  shipment_order_id: chunk
+                };
+
+                const detailResponse = await fetch("https://merchantapistaging.leopardscourier.com/api/getShipmentDetailsByOrderID/format/json/", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(detailPayload)
+                });
+
+                const detailData = await detailResponse.json();
+
+                if (!detailData || detailData.status !== 1) {
+                  resultDiv.innerHTML = `<div class="text-center text-red-500 py-8"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><p>Error fetching shipment details: ${detailData.error || "Unknown error"}</p></div>`;
+                  return;
+                }
+
+                if (detailData.data && detailData.data.length > 0) {
+                  allData = allData.concat(detailData.data);
+                }
+              }
+
+              if (allData.length === 0) {
+                resultDiv.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><p>No shipment details found for given order IDs.</p></div>';
+                return;
+              }
+
+              leopardsData = allData;
+              filteredData = [...allData];
+              displayLeopardsData(filteredData);
+
+            } catch (err) {
+              resultDiv.innerHTML = `<div class="text-center text-red-500 py-8"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><p>Error: ${err.message}</p></div>`;
+            }
+          }
+
+          function displayLeopardsData(data) {
+            const resultDiv = document.getElementById('leopards-result');
+
+            if (data.length === 0) {
+              resultDiv.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-search text-4xl mb-3"></i><p>No shipments match the current filters.</p></div>';
+              return;
+            }
+
+            // Fixed columns and labels (as requested)
+            const columns = [
+              { key: 'booking_date', label: 'BOOKING DATE' },
+              { key: 'track_number', label: 'TRACK NUMBER' },
+              { key: 'track_number_short', label: 'TRACK NUMBER SHORT' },
+              { key: 'booked_packet_weight', label: 'BOOKED PACKET WEIGHT' },
+              { key: 'booked_packet_no_piece', label: 'BOOKED PACKET NO PIECE' },
+              { key: 'booked_packet_collect_amount', label: 'BOOKED PACKET COLLECT AMOUNT' },
+              { key: 'booked_packet_order_id', label: 'BOOKED PACKET ORDER ID' },
+              { key: 'origin_city', label: 'ORIGIN CITY' },
+              { key: 'destination_city', label: 'DESTINATION CITY' },
+              { key: 'shipment_name_eng', label: 'SHIPMENT NAME ENG' },
+              { key: 'shipment_email', label: 'SHIPMENT EMAIL' },
+              { key: 'shipment_phone', label: 'SHIPMENT PHONE' },
+              { key: 'shipment_address', label: 'SHIPMENT ADDRESS' },
+              { key: 'consignment_name_eng', label: 'CONSIGNMENT NAME ENG' },
+              { key: 'consignment_email', label: 'CONSIGNMENT EMAIL' },
+              { key: 'consignment_phone', label: 'CONSIGNMENT PHONE' },
+              { key: 'consignment_phone_two', label: 'CONSIGNMENT PHONE TWO' },
+              { key: 'consignment_phone_three', label: 'CONSIGNMENT PHONE THREE' },
+              { key: 'consignment_address', label: 'CONSIGNMENT ADDRESS' },
+              { key: 'special_instructions', label: 'SPECIAL INSTRUCTIONS' },
+              { key: 'shipment_type_name', label: 'SHIPMENT TYPE NAME' },
+              { key: 'booked_packet_status', label: 'BOOKED PACKET STATUS' },
+              { key: 'delivery_date', label: 'DELIVERY DATE' },
+              { key: 'return_date', label: 'RETURN DATE' },
+              { key: 'invoice_number', label: 'INVOICE NUMBER' },
+              { key: 'invoice_date', label: 'INVOICE DATE' }
+            ];
+
+            // Build HTML table
+            let html = "<div class='overflow-x-auto'><table class='min-w-full bg-white border border-gray-200 rounded-lg'>";
+            html += "<thead><tr class='bg-gradient-to-r from-green-600 to-green-700 text-white'>";
+            columns.forEach(col => {
+              html += `<th class=\"px-4 py-3 text-left text-xs md:text-sm font-semibold border-b border-green-600 whitespace-nowrap\">${col.label}</th>`;
+            });
+            html += "</tr></thead><tbody>";
+
+            data.forEach((item, index) => {
+              const rowClass = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+              html += `<tr class="${rowClass} hover:bg-gray-100 transition-colors">`;
+              columns.forEach(col => {
+                // Prefer exact key; fallback to potential alternative casings
+                let val = item[col.key];
+                if (val === undefined) {
+                  const alt1 = col.key.replace(/_([a-z])/g, (_, c) => c.toUpperCase()); // snake_case -> camelCase
+                  const alt2 = col.key.toUpperCase();
+                  val = item[alt1] ?? item[alt2];
+                }
+                if (val === null || val === undefined) val = '';
+                html += `<td class=\"px-4 py-3 text-xs md:text-sm text-gray-700 border-b border-gray-200 whitespace-nowrap\">${val}</td>`;
+              });
+              html += "</tr>";
+            });
+
+            html += "</tbody></table></div>";
+            html += `<div class="mt-4 text-sm text-gray-600">Showing ${data.length} of ${leopardsData.length} shipments</div>`;
+
+            resultDiv.innerHTML = html;
+          }
+
+          function applyFilters() {
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
+            const searchTerm = document.getElementById('search-filter').value.toLowerCase();
+
+            // Helper: robust date parser supporting YYYY-MM-DD, MM/DD/YYYY, YYYY/MM/DD
+            function parseDateSafe(val) {
+              if (!val) return null;
+              if (val instanceof Date) return isNaN(val) ? null : val;
+              if (typeof val !== 'string') {
+                const d = new Date(val);
+                return isNaN(d) ? null : d;
+              }
+              const s = val.trim();
+              // Try native Date first
+              let d = new Date(s);
+              if (!isNaN(d)) return d;
+              // Try split patterns
+              // YYYY-MM-DD or YYYY/MM/DD
+              let m = s.match(/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/);
+              if (m) {
+                const parts = s.split(/[-\/]/).map(Number);
+                d = new Date(parts[0], parts[1] - 1, parts[2]);
+                return isNaN(d) ? null : d;
+              }
+              // MM/DD/YYYY
+              m = s.match(/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/);
+              if (m) {
+                const parts = s.split(/[-\/]/).map(Number);
+                d = new Date(parts[2], parts[0] - 1, parts[1]);
+                return isNaN(d) ? null : d;
+              }
+              return null;
+            }
+
+            // Normalize filter dates
+            const from = fromDate ? parseDateSafe(fromDate) : null;
+            const to = toDate ? parseDateSafe(toDate) : null;
+            if (to) {
+              // Set to end of day for inclusive filtering
+              to.setHours(23, 59, 59, 999);
+            }
+
+            // Keys to try for date fields in each item
+            const dateKeys = [
+              'booking_date', 'BOOKING_DATE', 'BookingDate',
+              'delivery_date', 'DELIVERY_DATE', 'DeliveryDate',
+              'return_date', 'RETURN_DATE', 'ReturnDate'
+            ];
+
+            filteredData = leopardsData.filter(item => {
+              // Search filter across all values
+              const matchesSearch = searchTerm
+                ? Object.values(item).some(value => value && value.toString().toLowerCase().includes(searchTerm))
+                : true;
+
+              // Date filter: use first available date field
+              let itemDate = null;
+              for (const k of dateKeys) {
+                if (item[k] !== undefined && item[k] !== null && item[k] !== '') {
+                  itemDate = parseDateSafe(item[k]);
+                  if (itemDate) break;
+                }
+              }
+
+              let matchesDate = true;
+              if (from || to) {
+                // If no date in item, treat as non-matching when filters are set
+                if (!itemDate) {
+                  matchesDate = false;
+                } else {
+                  if (from && itemDate < from) matchesDate = false;
+                  if (to && itemDate > to) matchesDate = false;
+                }
+              }
+
+              return matchesSearch && matchesDate;
+            });
+
+            displayLeopardsData(filteredData);
+          }
+
+          function clearFilters() {
+            document.getElementById('from-date').value = '2019-12-31';
+            document.getElementById('to-date').value = '2025-12-31';
+            document.getElementById('search-filter').value = '';
+
+            filteredData = [...leopardsData];
+            displayLeopardsData(filteredData);
+          }
+
+          // Initialize first tab as active
+          document.addEventListener('DOMContentLoaded', function () {
+            showTab('tcs');
+          });
         </script>
 </body>
 
