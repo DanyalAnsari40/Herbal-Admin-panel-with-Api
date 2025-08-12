@@ -1005,6 +1005,8 @@
           // Leopards API Integration
           let leopardsData = [];
           let filteredData = [];
+          let currentPage = 1;
+          const pageSize = 50; // max 50 per page
 
           async function fetchLeopardsData() {
             const resultDiv = document.getElementById('leopards-result');
@@ -1131,6 +1133,15 @@
               { key: 'invoice_date', label: 'INVOICE DATE' }
             ];
 
+            // Pagination calculations
+            const total = data.length;
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, total);
+            const pageItems = data.slice(startIdx, endIdx);
+
             // Build HTML table
             let html = "<div class='overflow-x-auto'><table class='min-w-full bg-white border border-gray-200 rounded-lg'>";
             html += "<thead><tr class='bg-gradient-to-r from-green-600 to-green-700 text-white'>";
@@ -1139,7 +1150,7 @@
             });
             html += "</tr></thead><tbody>";
 
-            data.forEach((item, index) => {
+            pageItems.forEach((item, index) => {
               const rowClass = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
               html += `<tr class="${rowClass} hover:bg-gray-100 transition-colors">`;
               columns.forEach(col => {
@@ -1157,9 +1168,33 @@
             });
 
             html += "</tbody></table></div>";
-            html += `<div class="mt-4 text-sm text-gray-600">Showing ${data.length} of ${leopardsData.length} shipments</div>`;
+            html += `<div class=\"mt-4 text-sm text-gray-600\">Showing ${startIdx + 1}–${endIdx} of ${total} shipments (Page ${currentPage} of ${totalPages})</div>`;
+
+            // Pagination controls
+            html += `<div class=\"mt-3 flex items-center gap-2\">`;
+            const disabledPrev = currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '';
+            const disabledNext = currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '';
+            html += `<button class=\"px-3 py-1 rounded border text-sm ${disabledPrev}\" onclick=\"goToPage(${currentPage - 1})\">Prev</button>`;
+            const windowSize = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(windowSize / 2));
+            let endPage = Math.min(totalPages, startPage + windowSize - 1);
+            startPage = Math.max(1, Math.min(startPage, endPage - windowSize + 1));
+            for (let p = startPage; p <= endPage; p++) {
+              const active = p === currentPage ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100';
+              html += `<button class=\"px-3 py-1 rounded border text-sm ${active}\" onclick=\"goToPage(${p})\">${p}</button>`;
+            }
+            html += `<button class=\"px-3 py-1 rounded border text-sm ${disabledNext}\" onclick=\"goToPage(${currentPage + 1})\">Next</button>`;
+            html += `</div>`;
 
             resultDiv.innerHTML = html;
+          }
+
+          function goToPage(page) {
+            const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+            if (typeof page !== 'number') return;
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            displayLeopardsData(filteredData);
           }
 
           function applyFilters() {
@@ -1241,6 +1276,7 @@
               return matchesSearch && matchesDate;
             });
 
+            currentPage = 1;
             displayLeopardsData(filteredData);
           }
 
@@ -1250,6 +1286,7 @@
             document.getElementById('search-filter').value = '';
 
             filteredData = [...leopardsData];
+            currentPage = 1;
             displayLeopardsData(filteredData);
           }
 
