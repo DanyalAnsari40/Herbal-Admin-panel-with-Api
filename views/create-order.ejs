@@ -246,13 +246,14 @@
                             <i class="fas fa-shipping-fast mr-3 text-2xl"></i>
                             M&P
                           </button>
-                          <a href="/admin/tracking"
+                          <button onclick="openPostexModal()"
                             class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-plane mr-3 text-2xl"></i>
-                            FedEx
-                          </a>
+                            PostEx
+                          </button>
                         </div>
                       </div>
+                      
 
 
 
@@ -279,9 +280,9 @@
                                 class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
                                 <i class="fas fa-shipping-fast mr-2"></i>M&P
                               </button>
-                              <button onclick="showTab('fedex')" id="fedex-tab"
+                              <button onclick="showTab('postex')" id="postex-tab"
                                 class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 active:border-green-500 active:text-green-600">
-                                <i class="fas fa-plane mr-2"></i>FedEx
+                                <i class="fas fa-plane mr-2"></i>PostEx
                               </button>
                             </nav>
                           </div>
@@ -409,13 +410,79 @@
                             </div>
                           </div>
 
-                          <!-- FedEx Tab -->
-                          <div id="fedex-content" class="tab-content hidden">
+                          <!-- PostEx Tab -->
+                          <div id="postex-content" class="tab-content hidden">
                             <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                              <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-plane mr-2 text-purple-500"></i>FedEx Orders
-                              </h3>
-                              <p class="text-gray-600">FedEx courier service data will be displayed here.</p>
+                              <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">
+                                  <i class="fas fa-plane mr-2 text-purple-500"></i>PostEx Orders
+                                </h3>
+                                <button form="postexResultsForm" type="submit"
+                                  class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors">
+                                  <i class="fas fa-sync-alt mr-2"></i>Load Orders
+                                </button>
+                              </div>
+
+                              <!-- Filters -->
+                              <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-semibold text-gray-700 mb-3">Filters</h4>
+                                <form id="postexResultsForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                  <div>
+                                    <label class="block text-sm font-medium mb-1">Order Status</label>
+                                    <select id="postexOrderStatusID" class="w-full border rounded px-3 py-2">
+                                      <option value="0">All</option>
+                                      <option value="1">Unbooked</option>
+                                      <option value="2">Booked</option>
+                                      <option value="3">PostEx Warehouse</option>
+                                      <option value="4">Out For Delivery</option>
+                                      <option value="5">Delivered</option>
+                                      <option value="6">Returned</option>
+                                      <option value="7">Un-Assigned By Me</option>
+                                      <option value="8">Expired</option>
+                                      <option value="9">Delivery Under Review</option>
+                                      <option value="15">Picked By PostEx</option>
+                                      <option value="16">Out For Return</option>
+                                      <option value="17">Attempted</option>
+                                      <option value="18">En-Route to PostEx warehouse</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium mb-1">From Date</label>
+                                    <input id="postexFromDate" type="date" class="w-full border rounded px-3 py-2" />
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium mb-1">To Date</label>
+                                    <input id="postexToDate" type="date" class="w-full border rounded px-3 py-2" />
+                                  </div>
+                                  <div class="flex items-end">
+                                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Load Orders</button>
+                                  </div>
+                                </form>
+                              </div>
+
+                              <!-- Results -->
+                              <div class="overflow-auto">
+                                <table class="min-w-full text-sm">
+                                  <thead class="bg-gray-100 text-gray-700">
+                                    <tr>
+                                      <th class="px-3 py-2 text-left">Tracking #</th>
+                                      <th class="px-3 py-2 text-left">Customer</th>
+                                      <th class="px-3 py-2 text-left">Phone</th>
+                                      <th class="px-3 py-2 text-left">City</th>
+                                      <th class="px-3 py-2 text-left">Address</th>
+                                      <th class="px-3 py-2 text-left">Amount</th>
+                                      <th class="px-3 py-2 text-left">Status</th>
+                                      <th class="px-3 py-2 text-left">Ref #</th>
+                                      <th class="px-3 py-2 text-left">Items</th>
+                                      <th class="px-3 py-2 text-left">Invoice Div.</th>
+                                      <th class="px-3 py-2 text-left">Date</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="postexResultsBody">
+                                    <tr><td class="px-3 py-2" colspan="11">No data</td></tr>
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -852,6 +919,118 @@
           </div>
       </div>
 
+      <!-- PostEx Courier Booking Modal -->
+      <div id="postexModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+              <i class="fas fa-plane mr-3 text-purple-600"></i>
+              PostEx Order Creation
+            </h2>
+            <button onclick="closePostexModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <form id="postexForm" class="space-y-6">
+            <!-- Hidden: API token (kept in JS as well) -->
+            <input type="hidden" id="postex_token" value="YzIxZGU5YjY0N2M0NDU1ZGE0ZDM5ZmVlOTA3ZWEwODc6NGI4OTRjNzcyNjRkNDA1NTk3ZDNjODQwNDhhYmQ1Mjg=">
+
+            <!-- Customer & Order Details -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Customer & Order Details</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Order Ref Number *</label>
+                  <input type="text" id="orderRefNumber" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Invoice Payment (Amount) *</label>
+                  <input type="number" id="invoicePayment" required min="0" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Order Detail</label>
+                  <input type="text" id="orderDetail" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Consignee -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Consignee</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Customer Name *</label>
+                  <input type="text" id="customerName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Customer Phone (03xxxxxxxxx) *</label>
+                  <input type="text" id="customerPhone" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="03xxxxxxxxx">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Delivery Address *</label>
+                  <input type="text" id="deliveryAddress" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipment -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Shipment</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-semibold text-gray-700">City Name *</label>
+                    <button type="button" onclick="loadPostexCities()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
+                      <i class="fas fa-sync-alt mr-1"></i>Load Cities
+                    </button>
+                  </div>
+                  <select id="cityName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-black">
+                    <option value="">Loading cities...</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Invoice Division *</label>
+                  <input type="number" id="invoiceDivision" min="0" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Items (Pieces) *</label>
+                  <input type="number" id="items" min="1" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Order Type *</label>
+                  <select id="orderType" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="Normal" selected>Normal</option>
+                    <option value="Reverse">Reverse</option>
+                    <option value="Replacement">Replacement</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Transaction Notes</label>
+                  <input type="text" id="transactionNotes" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Pickup Address Code</label>
+                  <input type="text" id="pickupAddressCode" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Store Address Code</label>
+                  <input type="text" id="storeAddressCode" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-4">
+              <button type="button" onclick="closePostexModal()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-colors">Cancel</button>
+              <button type="submit" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-200">
+                <i class="fas fa-paper-plane mr-2"></i>
+                Create Order
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- Toast Container -->
       <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
@@ -1257,6 +1436,194 @@
             }
           });
 
+          // PostEx Modal + API Integration
+          // Expose open/close on window so inline onclick can access them
+          window.openPostexModal = function () {
+            const modal = document.getElementById('postexModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => loadPostexCities(), 100);
+          }
+          window.closePostexModal = function () {
+            const modal = document.getElementById('postexModal');
+            if (!modal) return;
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }
+
+          async function loadPostexCities() {
+            const dropdown = document.getElementById('cityName');
+            if (!dropdown) return;
+            dropdown.innerHTML = `<option value="">Loading cities...</option>`;
+            const token = document.getElementById('postex_token')?.value || 'YzIxZGU5YjY0N2M0NDU1ZGE0ZDM5ZmVlOTA3ZWEwODc6NGI4OTRjNzcyNjRkNDA1NTk3ZDNjODQwNDhhYmQ1Mjg=';
+            try {
+              const res = await fetch('https://api.postex.pk/services/integration/api/order/v2/get-operational-city', {
+                method: 'GET',
+                headers: { 'token': token }
+              });
+              const data = await res.json();
+              dropdown.innerHTML = `<option value="">-- Select City --</option>`;
+              // API returns: { statusCode: "200", dist: [ { operationalCityName: "Lahore", ... }, ... ] }
+              const dist = Array.isArray(data?.dist) ? data.dist : [];
+              // Extract names, dedupe, sort
+              const names = Array.from(new Set(
+                dist
+                  .map(c => (c && (c.operationalCityName || c.cityName || c.City || c.city)) || '')
+                  .filter(Boolean)
+              )).sort((a,b) => a.localeCompare(b));
+              names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                dropdown.appendChild(opt);
+              });
+            } catch (err) {
+              console.error('PostEx cities error:', err);
+              dropdown.innerHTML = `<option value="">Failed to load cities</option>`;
+            }
+          }
+
+          (function attachPostexSubmit(){
+            const form = document.getElementById('postexForm');
+            if (!form) return;
+            form.addEventListener('submit', async function(e){
+              e.preventDefault();
+              const token = document.getElementById('postex_token')?.value || 'YzIxZGU5YjY0N2M0NDU1ZGE0ZDM5ZmVlOTA3ZWEwODc6NGI4OTRjNzcyNjRkNDA1NTk3ZDNjODQwNDhhYmQ1Mjg=';
+              const getVal = (id) => (document.getElementById(id)?.value || '').trim();
+              const payload = {
+                cityName: getVal('cityName'),
+                customerName: getVal('customerName'),
+                customerPhone: getVal('customerPhone'),
+                deliveryAddress: getVal('deliveryAddress'),
+                invoiceDivision: Number(getVal('invoiceDivision')) || 0,
+                invoicePayment: Number(getVal('invoicePayment')) || 0,
+                items: Number(getVal('items')) || 0,
+                orderDetail: getVal('orderDetail'),
+                orderRefNumber: getVal('orderRefNumber'),
+                orderType: getVal('orderType'),
+                transactionNotes: getVal('transactionNotes'),
+                pickupAddressCode: getVal('pickupAddressCode'),
+                storeAddressCode: getVal('storeAddressCode')
+              };
+              try {
+                const res = await fetch('https://api.postex.pk/services/integration/api/order/v3/create-order', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'token': token },
+                  body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                const ok = res.ok && (data?.statusCode === '200' || data?.statusCode === 200);
+                if (ok) {
+                  const tn = data?.dist?.trackingNumber || 'N/A';
+                  if (typeof showToast === 'function') showToast(`PostEx order created. Tracking: ${tn}`, 'success');
+                  window.closePostexModal();
+                  form.reset();
+                } else {
+                  const msg = data?.statusMessage || data?.message || 'Failed to create order';
+                  if (typeof showToast === 'function') showToast(msg, 'error');
+                  console.error('PostEx create-order error:', data);
+                }
+              } catch (err) {
+                console.error('PostEx create order error:', err);
+                if (typeof showToast === 'function') showToast('Network error while creating PostEx order', 'error');
+              }
+            });
+          })();
+
+          // PostEx Results: fetch and render orders
+          (function initPostexResults(){
+            const form = document.getElementById('postexResultsForm');
+            const tbody = document.getElementById('postexResultsBody');
+            if (!form || !tbody) return;
+
+            const statusEl = document.getElementById('postexOrderStatusID');
+            const fromEl = document.getElementById('postexFromDate');
+            const toEl = document.getElementById('postexToDate');
+
+            const fmt = (d)=>{
+              const y=d.getFullYear();
+              const m=String(d.getMonth()+1).padStart(2,'0');
+              const day=String(d.getDate()).padStart(2,'0');
+              return `${y}-${m}-${day}`;
+            };
+
+            // set defaults: last 7 days
+            try{
+              const today=new Date();
+              const weekAgo=new Date();
+              weekAgo.setDate(today.getDate()-7);
+              if(fromEl && !fromEl.value) fromEl.value=fmt(weekAgo);
+              if(toEl && !toEl.value) toEl.value=fmt(today);
+            }catch(_){/* noop */}
+
+            async function loadOrders(){
+              const token = document.getElementById('postex_token')?.value || 'YzIxZGU5YjY0N2M0NDU1ZGE0ZDM5ZmVlOTA3ZWEwODc6NGI4OTRjNzcyNjRkNDA1NTk3ZDNjODQwNDhhYmQ1Mjg=';
+              const orderStatusID = Number(statusEl?.value||0) || 0;
+              const fromDate = fromEl?.value || '';
+              const toDate = toEl?.value || '';
+
+              // Validate required params
+              if(!fromDate || !toDate){
+                if (typeof showToast === 'function') showToast('Please select From and To dates','error');
+                return;
+              }
+
+              // Some environments require different param names; send all for compatibility
+              const url = `https://api.postex.pk/services/integration/api/order/v1/get-all-order?orderStatusID=${encodeURIComponent(orderStatusID)}&orderStatusId=${encodeURIComponent(orderStatusID)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}&startDate=${encodeURIComponent(fromDate)}&endDate=${encodeURIComponent(toDate)}`;
+              try{
+                tbody.innerHTML = `<tr><td class="px-3 py-2" colspan="11">Loading...</td></tr>`;
+                const res = await fetch(url, { method:'GET', headers:{ token } });
+                const data = await res.json();
+                if(!(res.ok) || !(data?.statusCode==="200" || data?.statusCode===200)){
+                  const msg = data?.statusMessage || data?.message || 'Failed to load orders';
+                  tbody.innerHTML = `<tr><td class="px-3 py-2 text-red-600" colspan="11">${msg}</td></tr>`;
+                  return;
+                }
+                const dist = Array.isArray(data?.dist)? data.dist : [];
+                if(dist.length===0){
+                  tbody.innerHTML = `<tr><td class="px-3 py-2" colspan="11">No data</td></tr>`;
+                  return;
+                }
+                const rowsHtml = dist.map(item=>{
+                  const trk = item?.trackingNumber || item?.trackingResponse?.trackingNumber || '';
+                  const r = item?.trackingResponse || {};
+                  const amount = (r.invoicePayment!=null)? r.invoicePayment : '';
+                  const date = r.transactionDate || '';
+                  const cust = r.customerName || '';
+                  const phone = r.customerPhone || '';
+                  const city = r.cityName || '';
+                  const addr = r.deliveryAddress || '';
+                  const status = r.transactionStatus || '';
+                  const ref = r.orderRefNumber || '';
+                  const items = r.items!=null ? r.items : '';
+                  const div = r.invoiceDivision!=null ? r.invoiceDivision : '';
+                  return `<tr class="border-b">
+                    <td class=\"px-3 py-2 whitespace-nowrap\">${trk}</td>
+                    <td class=\"px-3 py-2\">${cust}</td>
+                    <td class=\"px-3 py-2\">${phone}</td>
+                    <td class=\"px-3 py-2\">${city}</td>
+                    <td class=\"px-3 py-2\">${addr}</td>
+                    <td class=\"px-3 py-2\">${amount}</td>
+                    <td class=\"px-3 py-2\">${status}</td>
+                    <td class=\"px-3 py-2\">${ref}</td>
+                    <td class=\"px-3 py-2\">${items}</td>
+                    <td class=\"px-3 py-2\">${div}</td>
+                    <td class=\"px-3 py-2\">${date}</td>
+                  </tr>`;
+                }).join('');
+                tbody.innerHTML = rowsHtml;
+              }catch(err){
+                console.error('PostEx get-all-order error:', err);
+                tbody.innerHTML = `<tr><td class=\"px-3 py-2 text-red-600\" colspan=\"11\">Network error while loading orders</td></tr>`;
+              }
+            }
+
+            form.addEventListener('submit', function(e){ e.preventDefault(); loadOrders(); });
+            // initial load with defaults
+            loadOrders();
+          })();
+
           // Handle Leopards form submission
           document.getElementById('leopardsForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -1374,7 +1741,7 @@
                 from_date: document.getElementById('from-date').value,
                 to_date: document.getElementById('to-date').value
               });
-
+// https://merchantapistaging.leopardscourier.com/api/getBookedPacketLastStatus/format/json/
               const listResponse = await fetch(`https://merchantapistaging.leopardscourier.com/api/getBookedPacketLastStatus/format/json/?${params.toString()}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" }
