@@ -241,11 +241,11 @@
                             <i class="fas fa-truck mr-3 text-2xl"></i>
                             Leopards
                           </button>
-                          <a href="/admin/product-management"
+                          <button onclick="openMnpModal()"
                             class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-shipping-fast mr-3 text-2xl"></i>
                             M&P
-                          </a>
+                          </button>
                           <a href="/admin/tracking"
                             class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-plane mr-3 text-2xl"></i>
@@ -374,14 +374,6 @@
                             </div>
                           </div>
                         </div>
-
-
-
-
-
-
-
-
                       </section>
               </main>
 
@@ -393,7 +385,7 @@
                     <span class="font-semibold text-white">Admin Panel</span>
                     <i class="fas fa-shield-alt text-green-400"></i>
                   </div>
-                  <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+                  <p class="text-sm"> 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
                 </div>
               </footer>
         </div>
@@ -666,7 +658,187 @@
           </div>
         </div>
 
-        <script>
+        <!-- M&P Courier Booking Modal -->
+        <div id="mnpModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-shipping-fast mr-3 text-blue-600"></i>
+                M&P Parcel Booking
+              </h2>
+              <button onclick="closeMnpModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="mnpForm" class="space-y-6">
+              <!-- Consignee Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Consignee Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Name *</label>
+                    <input type="text" id="consigneeName" value="self" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Email *</label>
+                    <input type="email" id="consigneeEmail" value="example@example.com" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Address *</label>
+                    <input type="text" id="consigneeAddress" value="adfa" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Mobile No *</label>
+                    <input type="text" id="consigneeMobNo" value="1234567890" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Cell No *</label>
+                    <input type="text" id="consigneeCell" value="13434" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shipment Details -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Shipment Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Destination City Name *</label>
+                    <select id="destinationCityName" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black">
+                      <option value="">Loading cities...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pieces *</label>
+                    <input type="number" id="pieces" value="1" min="1" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Weight (kg) *</label>
+                    <input type="number" id="weight" value="1" min="0" step="0.01" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">COD Amount *</label>
+                    <input type="number" id="codAmount" value="5" min="0" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Customer Reference No *</label>
+                    <input type="text" id="custRefNo" value="T-786" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Product Details *</label>
+                    <input type="text" id="productDetails" value="One White T-Shirt" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fragile *</label>
+                    <select id="fragile" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="Y">Yes</option>
+                      <option value="N" selected>No</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Service *</label>
+                    <select id="service" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="O" selected>Overnight</option>
+                      <option value="S">Same Day</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks *</label>
+                    <input type="text" id="remarks" value="q" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Options -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Options</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Insurance Value *</label>
+                    <input type="number" id="insuranceValue" value="0" min="0" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Location ID *</label>
+                    <input type="number" id="locationID" value="1" min="0" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Insert Type *</label>
+                    <input type="text" id="InsertType" value="New" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Return Location *</label>
+                    <input type="text" id="ReturnLocation" value="Karachi" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sub Account ID *</label>
+                    <input type="text" id="subAccountId" value="Sub-123" required
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end space-x-4 pt-4">
+                <button type="button" onclick="closeMnpModal()"
+                  class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-colors">Cancel</button>
+                <button type="submit"
+                  class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-200">
+                  <i class="fas fa-paper-plane mr-2"></i>
+                  Book Parcel
+                </button>
+              </div>
+            </form>
+
+            <!-- Response box removed as per request: show only success message on booking -->
+          </div>
+      </div>
+
+      <!-- Toast Container -->
+      <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+      <script>
+          // Toast helper
+          function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const color = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-700';
+            const border = type === 'success' ? 'border-green-700' : type === 'error' ? 'border-red-700' : 'border-gray-800';
+
+            const toast = document.createElement('div');
+            toast.className = `${color} ${border} text-white px-4 py-3 rounded shadow-lg border flex items-start gap-3 transition-opacity duration-300`;
+            toast.innerHTML = `
+              <span class="mt-0.5">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+              </span>
+              <div class="text-sm leading-5">${message}</div>
+            `;
+            container.appendChild(toast);
+
+            // Auto dismiss after 4s
+            setTimeout(() => {
+              toast.classList.add('opacity-0');
+              setTimeout(() => toast.remove(), 300);
+            }, 4000);
+          }
           // Product selection and stock management
           const prodSelect = document.getElementById('productId');
           const stockField = document.getElementById('availableStock');
@@ -907,6 +1079,135 @@
 
             console.log('City dropdowns populated. Origin options:', originSelect.options.length, 'Destination options:', destSelect.options.length);
           }
+
+          // M&P Modal Functions
+          function openMnpModal() {
+            document.getElementById('mnpModal').classList.remove('hidden');
+            document.getElementById('mnpModal').classList.add('flex');
+            setTimeout(() => {
+              loadMnpCities();
+            }, 100);
+          }
+
+          function closeMnpModal() {
+            document.getElementById('mnpModal').classList.remove('flex');
+            document.getElementById('mnpModal').classList.add('hidden');
+          }
+
+          // Load Cities into dropdown (M&P)
+          async function loadMnpCities() {
+            const username = "ALI.RAZA_18O59";
+            const password = "AliRaza@123";
+            const accountNo = "4T1542";
+            const locationID = "29609";
+
+            const url = `http://mnpcourier.com/mycodapi/api/Branches/Get_Cities?username=${username}&password=${password}&accountNo=${accountNo}&locationID=${locationID}`;
+
+            try {
+              const response = await fetch(url);
+              const cities = await response.json();
+
+              const dropdown = document.getElementById("destinationCityName");
+              dropdown.innerHTML = `<option value="">-- Select City --</option>`;
+
+              // API seems to return array, derive city names accordingly
+              // Try cities[0].City as user’s snippet suggests it contains array of names
+              let cityList = [];
+              if (Array.isArray(cities)) {
+                if (Array.isArray(cities[0]?.City)) {
+                  cityList = cities[0].City;
+                } else {
+                  // Fallback: assume each item has City property as string
+                  cityList = cities.map(c => c.City || c.city || c.name).filter(Boolean);
+                }
+              }
+
+              cityList.forEach(city => {
+                const option = document.createElement("option");
+                option.value = city;
+                option.textContent = city;
+                dropdown.appendChild(option);
+              });
+            } catch (err) {
+              console.error("Error loading cities:", err);
+              document.getElementById("destinationCityName").innerHTML = `<option value="">Failed to load cities</option>`;
+            }
+          }
+
+          // Booking Form Submission (M&P)
+          document.getElementById("mnpForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const username = "ALI.RAZA_18O59";
+            const password = "AliRaza@123";
+            const accountNo = "4T1542";
+
+            const formData = {
+              consigneeName: document.getElementById('consigneeName').value,
+              consigneeAddress: document.getElementById('consigneeAddress').value,
+              consigneeMobNo: document.getElementById('consigneeMobNo').value,
+              consigneeCell: document.getElementById('consigneeCell').value,
+              consigneeEmail: document.getElementById('consigneeEmail').value,
+              destinationCityName: document.getElementById('destinationCityName').value,
+              pieces: document.getElementById('pieces').value,
+              weight: document.getElementById('weight').value,
+              codAmount: document.getElementById('codAmount').value,
+              custRefNo: document.getElementById('custRefNo').value,
+              productDetails: document.getElementById('productDetails').value,
+              fragile: document.getElementById('fragile').value,
+              service: document.getElementById('service').value,
+              remarks: document.getElementById('remarks').value,
+              insuranceValue: document.getElementById('insuranceValue').value,
+              locationID: document.getElementById('locationID').value,
+              InsertType: document.getElementById('InsertType').value,
+              ReturnLocation: document.getElementById('ReturnLocation').value,
+              subAccountId: document.getElementById('subAccountId').value,
+              username,
+              password,
+              accountNo,
+            };
+
+            const url = `https://mnpcourier.com/mycodapi/api/Booking/InsertBookingData`;
+
+            try {
+              const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+              });
+
+              const data = await response.json();
+
+              // Interpret success based on API shape (array or object)
+              let success = false;
+              let message = '';
+              let ref = '';
+
+              if (Array.isArray(data)) {
+                const item = data[0] || {};
+                success = item.isSuccess === true || item.isSuccess === 'true' || item.success === true || response.ok;
+                message = item.message || 'Order saved successfully!';
+                ref = item.orderReferenceId || item.consignment || item.trackingNo || '';
+              } else if (data && typeof data === 'object') {
+                success = data.isSuccess === true || data.isSuccess === 'true' || data.success === true || response.ok;
+                message = data.message || 'Order saved successfully!';
+                ref = data.orderReferenceId || data.consignment || data.trackingNo || '';
+              } else {
+                success = response.ok;
+              }
+
+              if (success) {
+                showToast(`${message}${ref ? ` (Ref: ${ref})` : ''}`, 'success');
+                closeMnpModal();
+                document.getElementById('mnpForm').reset();
+              } else {
+                showToast(`Booking failed${message ? `: ${message}` : ''}`,'error');
+              }
+            } catch (err) {
+              console.error("Booking Error:", err);
+              showToast("Booking Error: " + err.message, 'error');
+            }
+          });
 
           // Handle Leopards form submission
           document.getElementById('leopardsForm').addEventListener('submit', async function (e) {
