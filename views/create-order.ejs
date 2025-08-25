@@ -357,10 +357,55 @@
                           <!-- M&P Tab -->
                           <div id="mp-content" class="tab-content hidden">
                             <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                              <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-shipping-fast mr-2 text-blue-500"></i>M&P Orders
-                              </h3>
-                              <p class="text-gray-600">M&P courier service data will be displayed here.</p>
+                              <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">
+                                  <i class="fas fa-shipping-fast mr-2 text-blue-500"></i>M&P Orders (QSR Report)
+                                </h3>
+                                <button onclick="fetchMnpReport()"
+                                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                                  <i class="fas fa-sync-alt mr-2"></i>Refresh Report
+                                </button>
+                              </div>
+
+                              <!-- Filters -->
+                              <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-semibold text-gray-700 mb-3">Filters</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">locationID</label>
+                                    <input type="text" id="mnp-location" value="29609"
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                                    <input type="number" id="mnp-year" value="2025" min="2017" max="2025"
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                  </div>
+                                  <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">MonthNumber</label>
+                                    <input type="number" id="mnp-month" value="1" min="1" max="12"
+                                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                  </div>
+                                </div>
+                                <div class="mt-3">
+                                  <button onclick="fetchMnpReport()"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-filter mr-2"></i>Apply
+                                  </button>
+                                  <button onclick="clearMnpFilters()"
+                                    class="ml-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-times mr-2"></i>Clear
+                                  </button>
+                                </div>
+                              </div>
+
+                              <!-- Results -->
+                              <div id="mnp-result" class="overflow-x-auto">
+                                <div class="text-center text-gray-500 py-8">
+                                  <i class="fas fa-database text-4xl mb-3"></i>
+                                  <p>Set filters and click "Refresh Report" to load M&P QSR data</p>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
@@ -1304,6 +1349,12 @@
                 fetchLeopardsData();
               }, 100);
             }
+            if (tabName === 'mp') {
+              // Auto-load M&P QSR report when tab is opened
+              setTimeout(() => {
+                fetchMnpReport();
+              }, 100);
+            }
           }
 
           // Leopards API Integration
@@ -1594,11 +1645,139 @@
             displayLeopardsData(filteredData);
           }
 
+          // M&P QSR Report Integration
+          async function fetchMnpReport() {
+            const resultDiv = document.getElementById('mnp-result');
+            if (!resultDiv) return;
+            // credentials work behind the scenes (hidden from UI)
+            const username = 'ALI.RAZA_18O59';
+            const password = 'AliRaza@123';
+            const locationID = (document.getElementById('mnp-location')?.value || '').trim();
+            const year = parseInt(document.getElementById('mnp-year')?.value || '0', 10);
+            const month = parseInt(document.getElementById('mnp-month')?.value || '0', 10);
+
+            const errors = [];
+            if (!locationID) errors.push('locationID is required');
+            if (!(year >= 2017 && year <= 2025)) errors.push('Year must be between 2017 and 2025');
+            if (!(month >= 1 && month <= 12)) errors.push('MonthNumber must be 1-12');
+
+            if (errors.length) {
+              if (typeof showToast === 'function') showToast(errors.join('\n'), 'error');
+              resultDiv.innerHTML = `<div class="text-center text-red-500 py-6"><i class='fas fa-exclamation-triangle text-3xl mb-2'></i><p>${errors.join('<br>')}</p></div>`;
+              return;
+            }
+
+            resultDiv.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-3"></i><p>Loading M&P QSR report...</p></div>';
+
+            const payload = {
+              UserName: username,
+              Password: password,
+              MonthNumber: month,
+              Year: year,
+              locationID: locationID
+            };
+
+            try {
+              const resp = await fetch('https://mnpcourier.com/mycodapi/api/Reports/QSR_Report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              const data = await resp.json();
+
+              if (!resp.ok) {
+                throw new Error(data?.message || `HTTP ${resp.status}`);
+              }
+
+              if (!data || data.isSuccess === false) {
+                const msg = data?.message || 'Report request failed';
+                if (typeof showToast === 'function') showToast(msg, 'error');
+                resultDiv.innerHTML = `<div class="text-center text-red-500 py-8"><i class='fas fa-exclamation-circle text-4xl mb-2'></i><p>${msg}</p></div>`;
+                return;
+              }
+
+              displayMnpReport(data);
+              if (typeof showToast === 'function') showToast('M&P report loaded', 'success');
+            } catch (err) {
+              console.error('QSR_Report error:', err);
+              if (typeof showToast === 'function') showToast(err.message || 'Failed to load report', 'error');
+              resultDiv.innerHTML = `<div class="text-center text-red-500 py-8"><i class='fas fa-exclamation-triangle text-4xl mb-2'></i><p>${err.message || 'Failed to load report'}</p></div>`;
+            }
+          }
+
+          function displayMnpReport(report) {
+            const resultDiv = document.getElementById('mnp-result');
+            if (!resultDiv) return;
+
+            const details = Array.isArray(report?.Details) ? report.Details : [];
+            if (details.length === 0) {
+              resultDiv.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-search text-4xl mb-3"></i><p>No data found for given filters.</p></div>';
+              return;
+            }
+
+            const columns = [
+              { key: 'consignmentNumber', label: 'Consignment Number' },
+              { key: 'BookingDate', label: 'Booking Date' },
+              { key: 'OrgZone', label: 'Origin Zone' },
+              { key: 'OrgBranch', label: 'Origin Branch' },
+              { key: 'consignee', label: 'Consignee' },
+              { key: 'orderRefNo', label: 'Order Ref No' },
+              { key: 'SERVICE', label: 'Service' },
+              { key: 'DESTZONE', label: 'Dest Zone' },
+              { key: 'DESTINATION', label: 'Destination' },
+              { key: 'WEIGHT', label: 'Weight' },
+              { key: 'receivedBy', label: 'Received By' },
+              { key: 'TIME', label: 'Time' },
+              { key: 'deliveryDate', label: 'Delivery Date' },
+              { key: 'CODAmount', label: 'COD Amount' },
+              { key: 'PaymentMode', label: 'Payment Mode' },
+              { key: 'RRStatus', label: 'RR Status' },
+              { key: 'CHEQUENO', label: 'Cheque No' }
+            ];
+
+            let html = '';
+            html += '<div class="mb-4 text-sm text-gray-700">';
+            if (report.AccountNumber) html += `<div><span class='font-semibold'>Account Number:</span> ${report.AccountNumber}</div>`;
+            if (report.ClientName) html += `<div><span class='font-semibold'>Client Name:</span> ${report.ClientName}</div>`;
+            if (report.message) html += `<div><span class='font-semibold'>Message:</span> ${report.message}</div>`;
+            html += '</div>';
+
+            html += "<div class='overflow-x-auto'><table class='min-w-full bg-white border border-gray-200 rounded-lg'>";
+            html += "<thead><tr class='bg-gradient-to-r from-blue-600 to-blue-700 text-white'>";
+            columns.forEach(col => {
+              html += `<th class=\"px-4 py-3 text-left text-xs md:text-sm font-semibold border-b border-blue-600 whitespace-nowrap\">${col.label}</th>`;
+            });
+            html += "</tr></thead><tbody>";
+
+            details.forEach((item, idx) => {
+              const rowClass = idx % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+              html += `<tr class=\"${rowClass} hover:bg-gray-100 transition-colors\">`;
+              columns.forEach(col => {
+                let val = item[col.key];
+                if (val === null || val === undefined) val = '';
+                html += `<td class=\"px-4 py-3 text-xs md:text-sm text-gray-700 border-b border-gray-200 whitespace-nowrap\">${val}</td>`;
+              });
+              html += "</tr>";
+            });
+
+            html += "</tbody></table></div>";
+
+            resultDiv.innerHTML = html;
+          }
+
+          function clearMnpFilters() {
+            const now = new Date();
+            document.getElementById('mnp-location').value = '29609';
+            document.getElementById('mnp-year').value = Math.min(2025, Math.max(2017, now.getFullYear()));
+            document.getElementById('mnp-month').value = now.getMonth() + 1;
+            document.getElementById('mnp-result').innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-database text-4xl mb-3"></i><p>Set filters and click "Refresh Report" to load M&P QSR data</p></div>';
+          }
+
           // Initialize first tab as active
           document.addEventListener('DOMContentLoaded', function () {
             showTab('tcs');
           });
         </script>
-</body>
 
 </html>
