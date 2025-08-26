@@ -1443,6 +1443,17 @@
             if (!modal) return;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            // If city selected matches a known address code and inputs are empty, prefill storeAddressCode
+            try {
+              const city = (document.getElementById('cityName')?.value || '').trim().toUpperCase();
+              const knownCodes = { 'MULTAN': '001' };
+              if (city && knownCodes[city]) {
+                const storeEl = document.getElementById('storeAddressCode');
+                const pickupEl = document.getElementById('pickupAddressCode');
+                if (storeEl && !storeEl.value) storeEl.value = knownCodes[city];
+                if (pickupEl && !pickupEl.value) pickupEl.placeholder = `Try ${knownCodes[city]} if needed`;
+              }
+            } catch(_) {}
             setTimeout(() => loadPostexCities(), 100);
           }
           window.closePostexModal = function () {
@@ -1491,29 +1502,95 @@
               e.preventDefault();
               const token = document.getElementById('postex_token')?.value || 'YzIxZGU5YjY0N2M0NDU1ZGE0ZDM5ZmVlOTA3ZWEwODc6NGI4OTRjNzcyNjRkNDA1NTk3ZDNjODQwNDhhYmQ1Mjg=';
               const getVal = (id) => (document.getElementById(id)?.value || '').trim();
+              // Gather values
+              // Normalize city name (some APIs are case/format sensitive)
+              const cityNameRaw = getVal('cityName');
+              const cityName = cityNameRaw ? cityNameRaw.toUpperCase() : '';
+              const customerName = getVal('customerName');
+              const customerPhone = getVal('customerPhone');
+              const deliveryAddress = getVal('deliveryAddress');
+              const orderRefNumber = getVal('orderRefNumber');
+              const invoicePayment = Number(getVal('invoicePayment')) || 0;
+              const invoiceDivision = Number(getVal('invoiceDivision')) || 1; // default at least 1
+              const items = Number(getVal('items')) || 1; // default at least 1
+              const orderDetail = getVal('orderDetail');
+              const transactionNotes = getVal('transactionNotes');
+              const orderType = getVal('orderType') || 'Normal';
+              const pickupAddressCode = getVal('pickupAddressCode');
+              const storeAddressCode = getVal('storeAddressCode');
+
+              // Validate required fields
+              const missing = [];
+              if (!orderRefNumber) missing.push('orderRefNumber');
+              if (!invoicePayment) missing.push('invoicePayment');
+              if (!customerName) missing.push('customerName');
+              if (!customerPhone) missing.push('customerPhone');
+              if (!deliveryAddress) missing.push('deliveryAddress');
+              if (!cityName) missing.push('cityName');
+              if (!invoiceDivision) missing.push('invoiceDivision');
+              if (!items) missing.push('items');
+              if (!orderType) missing.push('orderType');
+              // PostEx requires at least one of the codes
+              if (!pickupAddressCode && !storeAddressCode) missing.push('pickup/store address code');
+              if (missing.length) {
+                if (typeof showToast === 'function') showToast(`Please fill required fields: ${missing.join(', ')}`,'error');
+                return;
+              }
+
+              // Build payload; include optional address codes only if provided
               const payload = {
-                cityName: getVal('cityName'),
-                customerName: getVal('customerName'),
-                customerPhone: getVal('customerPhone'),
-                deliveryAddress: getVal('deliveryAddress'),
-                invoiceDivision: Number(getVal('invoiceDivision')) || 0,
-                invoicePayment: Number(getVal('invoicePayment')) || 0,
-                items: Number(getVal('items')) || 0,
-                orderDetail: getVal('orderDetail'),
-                orderRefNumber: getVal('orderRefNumber'),
-                orderType: getVal('orderType'),
-                transactionNotes: getVal('transactionNotes'),
-                pickupAddressCode: getVal('pickupAddressCode'),
-                storeAddressCode: getVal('storeAddressCode')
+                cityName,
+                customerName,
+                customerPhone,
+                deliveryAddress,
+                invoiceDivision,
+                invoicePayment,
+                items,
+                orderDetail,
+                orderRefNumber,
+                orderType,
+                transactionNotes
               };
+              // Prefer storeAddressCode if provided; else use pickupAddressCode
+              if (storeAddressCode) payload.storeAddressCode = storeAddressCode;
+              else if (pickupAddressCode) payload.pickupAddressCode = pickupAddressCode;
               try {
-                const res = await fetch('https://api.postex.pk/services/integration/api/order/v3/create-order', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'token': token },
-                  body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                const ok = res.ok && (data?.statusCode === '200' || data?.statusCode === 200);
+                const doRequest = async (body) => {
+                  const res = await fetch('https://api.postex.pk/services/integration/api/order/v3/create-order', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'token': token }, body: JSON.stringify(body)
+                  });
+                  const data = await res.json();
+                  return { res, data };
+                };
+
+                // First attempt
+                let { res, data } = await doRequest(payload);
+                let ok = res.ok && (data?.statusCode === '200' || data?.statusCode === 200);
+
+                // If invalid address code, retry by switching to the other provided code (never send with both null)
+                if (!ok && /STORE ADDRESS CODE|PICKUP ADDRESS CODE/i.test(data?.statusMessage || '')) {
+                  let retried = false;
+                  // If we sent store and user also provided pickup, try pickup only
+                  if (payload.storeAddressCode && pickupAddressCode) {
+                    const retryPayload = { ...payload };
+                    delete retryPayload.storeAddressCode;
+                    retryPayload.pickupAddressCode = pickupAddressCode;
+                    ({ res, data } = await doRequest(retryPayload));
+                    ok = res.ok && (data?.statusCode === '200' || data?.statusCode === 200);
+                    retried = true;
+                  }
+                  // If we sent pickup and user also provided store, try store only
+                  if (!ok && payload.pickupAddressCode && storeAddressCode) {
+                    const retryPayload2 = { ...payload };
+                    delete retryPayload2.pickupAddressCode;
+                    retryPayload2.storeAddressCode = storeAddressCode;
+                    ({ res, data } = await doRequest(retryPayload2));
+                    ok = res.ok && (data?.statusCode === '200' || data?.statusCode === 200);
+                    retried = true;
+                  }
+                  // Do not attempt a retry that removes both codes, as API requires one
+                }
+
                 if (ok) {
                   const tn = data?.dist?.trackingNumber || 'N/A';
                   if (typeof showToast === 'function') showToast(`PostEx order created. Tracking: ${tn}`, 'success');
@@ -1521,6 +1598,12 @@
                   form.reset();
                 } else {
                   const msg = data?.statusMessage || data?.message || 'Failed to create order';
+                  if (/STORE ADDRESS CODE/i.test(msg)) {
+                    // Helpful hint when store code invalid
+                    console.warn('Tip: Verify storeAddressCode/pickupAddressCode from PostEx portal (e.g., 001) and ensure it matches your merchant city.');
+                  }
+                  // Log payload to help diagnose what was sent
+                  try { console.debug('PostEx create-order payload sent:', payload); } catch(_) {}
                   if (typeof showToast === 'function') showToast(msg, 'error');
                   console.error('PostEx create-order error:', data);
                 }
