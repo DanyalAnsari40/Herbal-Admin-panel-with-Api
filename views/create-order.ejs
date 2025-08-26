@@ -231,11 +231,11 @@
                         <h2 class="text-4xl font-bold text-gray-800 mb-2">Create New Order</h2>
                         <p class="text-gray-600 text-lg">Add a new customer order with detailed information</p>
                         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <a href="/admin/orders"
-                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg transform hover:scale-105 transition-all duration-200">
+                          <button onclick="openTcsModal()"
+                            class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-shipping-fast mr-3 text-2xl"></i>
                             TCS
-                          </a>
+                          </button>
                           <button onclick="openLeopardsModal()"
                             class="flex items-center justify-center px-6 py-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-truck mr-3 text-2xl"></i>
@@ -515,6 +515,308 @@
               <button onclick="saveTrackingId()"
                 class="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white">Save</button>
             </div>
+          </div>
+        </div>
+
+        <!-- TCS Courier Booking Modal -->
+        <div id="tcsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-8 w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-shipping-fast mr-3 text-red-600"></i>
+                TCS Courier Booking
+              </h2>
+              <button onclick="closeTcsModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="tcsForm" class="space-y-6">
+              <!-- TCS tokens are handled server-side via /api/tcs proxies -->
+
+              <!-- Access/Top level fields -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-sm text-gray-600">
+                  TCS credentials are managed securely on the server.
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Consignment No (optional)</label>
+                  <input type="text" id="tcs_consignmentno" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                </div>
+              </div>
+
+              <!-- Shipper Info -->
+              <div class="bg-gray-50 p-4 rounded-xl border">
+                <h3 class="font-semibold text-gray-800 mb-4">Shipper Info</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">TCS Account *</label>
+                    <input type="text" id="tcs_shipper_tcsaccount" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Shipper Name *</label>
+                    <input type="text" id="tcs_shipper_name" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Mobile (0300xxxxxxx) *</label>
+                    <input type="text" id="tcs_shipper_mobile" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 1 *</label>
+                      <input type="text" id="tcs_shipper_address1" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 2</label>
+                      <input type="text" id="tcs_shipper_address2" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 3</label>
+                      <input type="text" id="tcs_shipper_address3" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">ZIP</label>
+                      <input type="text" id="tcs_shipper_zip" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Country Code (e.g., PK) *</label>
+                      <input type="text" id="tcs_shipper_countrycode" class="w-full p-3 border border-gray-300 rounded-lg" value="PK">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Country Name *</label>
+                      <input type="text" id="tcs_shipper_countryname" class="w-full p-3 border border-gray-300 rounded-lg" value="Pakistan">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">City Code (e.g., KHI)</label>
+                      <input type="text" id="tcs_shipper_citycode" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">City Name *</label>
+                      <select id="tcs_shipper_cityname" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Loading cities...</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Consignee Info -->
+              <div class="bg-gray-50 p-4 rounded-xl border">
+                <h3 class="font-semibold text-gray-800 mb-4">Consignee Info</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Consignee Code</label>
+                    <input type="text" id="tcs_consignee_code" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                    <input type="text" id="tcs_consignee_firstname" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Middle Name *</label>
+                    <input type="text" id="tcs_consignee_middlename" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                    <input type="text" id="tcs_consignee_lastname" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+
+                  <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 1 *</label>
+                      <input type="text" id="tcs_consignee_address1" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 2</label>
+                      <input type="text" id="tcs_consignee_address2" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Address 3</label>
+                      <input type="text" id="tcs_consignee_address3" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">ZIP</label>
+                      <input type="text" id="tcs_consignee_zip" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Country Code (e.g., PK) *</label>
+                      <input type="text" id="tcs_consignee_countrycode" class="w-full p-3 border border-gray-300 rounded-lg" value="PK">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Country Name *</label>
+                      <input type="text" id="tcs_consignee_countryname" class="w-full p-3 border border-gray-300 rounded-lg" value="Pakistan">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">City Code</label>
+                      <input type="text" id="tcs_consignee_citycode" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">City Name *</label>
+                      <select id="tcs_consignee_cityname" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Loading cities...</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                      <input type="email" id="tcs_consignee_email" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Area Code</label>
+                      <input type="text" id="tcs_consignee_areacode" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Area Name</label>
+                      <input type="text" id="tcs_consignee_areaname" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Block Code</label>
+                      <input type="text" id="tcs_consignee_blockcode" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Block Name</label>
+                      <input type="text" id="tcs_consignee_blockname" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Latitude</label>
+                      <input type="text" id="tcs_consignee_lat" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Longitude</label>
+                      <input type="text" id="tcs_consignee_lng" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Landmark</label>
+                      <input type="text" id="tcs_consignee_landmark" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="md:col-span-3">
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">Mobile (0300xxxxxxx) *</label>
+                      <input type="text" id="tcs_consignee_mobile" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vendor Info (optional) -->
+              <div class="bg-gray-50 p-4 rounded-xl border">
+                <h3 class="font-semibold text-gray-800 mb-4">Vendor Info (optional)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+                    <input type="text" id="tcs_vendor_name" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address 1</label>
+                    <input type="text" id="tcs_vendor_address1" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address 2</label>
+                    <input type="text" id="tcs_vendor_address2" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address 3</label>
+                    <input type="text" id="tcs_vendor_address3" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">City Code</label>
+                    <input type="text" id="tcs_vendor_citycode" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">City Name</label>
+                    <select id="tcs_vendor_cityname" class="w-full p-3 border border-gray-300 rounded-lg">
+                      <option value="">Loading cities...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Mobile</label>
+                    <input type="text" id="tcs_vendor_mobile" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shipment Info -->
+              <div class="bg-gray-50 p-4 rounded-xl border">
+                <h3 class="font-semibold text-gray-800 mb-4">Shipment Info</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cost Center Code *</label>
+                    <input type="text" id="tcs_ship_costcentercode" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Reference No</label>
+                    <input type="text" id="tcs_ship_referenceno" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Content Description</label>
+                    <input type="text" id="tcs_ship_contentdesc" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Service Code *</label>
+                    <input type="text" id="tcs_ship_servicecode" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g., O">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Currency *</label>
+                    <input type="text" id="tcs_ship_currency" class="w-full p-3 border border-gray-300 rounded-lg" value="PKR">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">COD Amount *</label>
+                    <input type="number" id="tcs_ship_codamount" class="w-full p-3 border border-gray-300 rounded-lg" min="0" step="1">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Weight in KG *</label>
+                    <input type="number" id="tcs_ship_weightinkg" class="w-full p-3 border border-gray-300 rounded-lg" min="0.5" step="0.1">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pieces *</label>
+                    <input type="number" id="tcs_ship_pieces" class="w-full p-3 border border-gray-300 rounded-lg" min="1" step="1" value="1">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fragile *</label>
+                    <select id="tcs_ship_fragile" class="w-full p-3 border border-gray-300 rounded-lg">
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-3">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks</label>
+                    <input type="text" id="tcs_ship_remarks" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Single SKU (optional) -->
+              <div class="bg-gray-50 p-4 rounded-xl border">
+                <h3 class="font-semibold text-gray-800 mb-4">SKU (optional)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <input type="text" id="tcs_sku_description" class="w-full p-3 border border-gray-300 rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+                    <input type="number" id="tcs_sku_quantity" class="w-full p-3 border border-gray-300 rounded-lg" min="1" step="1">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Weight (KG)</label>
+                    <input type="number" id="tcs_sku_weight" class="w-full p-3 border border-gray-300 rounded-lg" min="0.5" step="0.1">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">UOM</label>
+                    <input type="text" id="tcs_sku_uom" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="KG">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Unit Price</label>
+                    <input type="number" id="tcs_sku_unitprice" class="w-full p-3 border border-gray-300 rounded-lg" min="1" step="1">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end space-x-4 pt-6">
+                <button type="button" onclick="closeTcsModal()"
+                  class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-colors">Cancel</button>
+                <button type="submit"
+                  class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors">Create TCS Order</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -1610,6 +1912,263 @@
               } catch (err) {
                 console.error('PostEx create order error:', err);
                 if (typeof showToast === 'function') showToast('Network error while creating PostEx order', 'error');
+              }
+            });
+          })();
+
+          // TCS Modal Functions
+          function openTcsModal() {
+            const modal = document.getElementById('tcsModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Load TCS cities for dropdowns
+            setTimeout(() => { try { loadTcsCities(); } catch(_){} }, 100);
+          }
+
+          // Cache to avoid re-fetching repeatedly while modal stays open
+          let _tcsCityCache = null;
+          async function loadTcsCities() {
+            const shipperSel = document.getElementById('tcs_shipper_cityname');
+            const consigneeSel = document.getElementById('tcs_consignee_cityname');
+            const vendorSel = document.getElementById('tcs_vendor_cityname');
+            if (!shipperSel || !consigneeSel || !vendorSel) return;
+
+            const setLoading = (el) => { if (el) el.innerHTML = '<option value="">Loading cities...</option>'; };
+            const setFailed = (el) => { if (el) el.innerHTML = '<option value="">Failed to load cities</option>'; };
+            setLoading(shipperSel); setLoading(consigneeSel); setLoading(vendorSel);
+
+            try {
+              let cities = _tcsCityCache;
+              if (!cities) {
+                const res = await fetch('/api/tcs/cities', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ countrycode: ['PK'] })
+                });
+                const data = await res.json().catch(()=>({}));
+                if (!res.ok) {
+                  setFailed(shipperSel); setFailed(consigneeSel); setFailed(vendorSel);
+                  if (typeof showToast === 'function') showToast(data?.message || 'Failed to load TCS cities', 'error');
+                  return;
+                }
+                cities = normalizeTcsCities(data);
+                _tcsCityCache = cities;
+              }
+
+              populateTcsCityDropdown(shipperSel, cities);
+              populateTcsCityDropdown(consigneeSel, cities);
+              populateTcsCityDropdown(vendorSel, cities, /*required=*/false);
+
+              // Attach code auto-fill on change
+              attachCityCodeAutofill('tcs_shipper_cityname', 'tcs_shipper_citycode', cities);
+              attachCityCodeAutofill('tcs_consignee_cityname', 'tcs_consignee_citycode', cities);
+              attachCityCodeAutofill('tcs_vendor_cityname', 'tcs_vendor_citycode', cities);
+            } catch (err) {
+              console.error('TCS cities network error:', err);
+              setFailed(shipperSel); setFailed(consigneeSel); setFailed(vendorSel);
+            }
+          }
+
+          function normalizeTcsCities(payload){
+            // Try common wrappers
+            let arr = Array.isArray(payload) ? payload
+              : Array.isArray(payload?.dist) ? payload.dist
+              : Array.isArray(payload?.data) ? payload.data
+              : Array.isArray(payload?.cities) ? payload.cities
+              : [];
+            // Map to {name, code}
+            const mapped = arr.map(c => {
+              const name = c?.cityname || c?.cityName || c?.City || c?.city || '';
+              const code = c?.citycode || c?.cityCode || c?.Code || c?.code || '';
+              return { name: String(name).trim(), code: String(code||'').trim() };
+            }).filter(x => x.name);
+            // Dedupe by name, prefer keeping a code if available
+            const byName = new Map();
+            for (const it of mapped){
+              if (!byName.has(it.name) || (!byName.get(it.name).code && it.code)) {
+                byName.set(it.name, it);
+              }
+            }
+            return Array.from(byName.values()).sort((a,b)=>a.name.localeCompare(b.name));
+          }
+
+          function populateTcsCityDropdown(selectEl, cities, required=true){
+            if (!selectEl) return;
+            const placeholder = required ? 'Select City' : 'Select City (optional)';
+            selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+            cities.forEach(({name, code}) => {
+              const opt = document.createElement('option');
+              opt.value = name;
+              opt.textContent = code ? `${name} (${code})` : name;
+              opt.dataset.code = code || '';
+              selectEl.appendChild(opt);
+            });
+          }
+
+          function attachCityCodeAutofill(selectId, codeInputId, cities){
+            const sel = document.getElementById(selectId);
+            const codeEl = document.getElementById(codeInputId);
+            if (!sel || !codeEl) return;
+            const byName = new Map(cities.map(c=>[c.name, c.code]));
+            sel.addEventListener('change', function(){
+              const name = sel.value;
+              const code = byName.get(name) || '';
+              if (code) codeEl.value = code;
+            });
+          }
+          function closeTcsModal() {
+            const modal = document.getElementById('tcsModal');
+            if (!modal) return;
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }
+
+          // Handle TCS form submission
+          (function attachTcsSubmit(){
+            const form = document.getElementById('tcsForm');
+            if (!form) return;
+            form.addEventListener('submit', async function(e){
+              e.preventDefault();
+              const get = (id) => (document.getElementById(id)?.value || '').trim();
+              const consignmentno = get('tcs_consignmentno');
+
+              // Shipper
+              const shipperinfo = {
+                tcsaccount: get('tcs_shipper_tcsaccount'),
+                shippername: get('tcs_shipper_name'),
+                address1: get('tcs_shipper_address1'),
+                address2: get('tcs_shipper_address2') || undefined,
+                address3: get('tcs_shipper_address3') || undefined,
+                zip: get('tcs_shipper_zip') || undefined,
+                countrycode: get('tcs_shipper_countrycode') || 'PK',
+                countryname: get('tcs_shipper_countryname') || 'Pakistan',
+                citycode: get('tcs_shipper_citycode') || undefined,
+                cityname: get('tcs_shipper_cityname'),
+                mobile: get('tcs_shipper_mobile')
+              };
+
+              // Consignee
+              const consigneeinfo = {
+                consigneecode: get('tcs_consignee_code') || undefined,
+                firstname: get('tcs_consignee_firstname'),
+                middlename: get('tcs_consignee_middlename'),
+                lastname: get('tcs_consignee_lastname') || undefined,
+                address1: get('tcs_consignee_address1'),
+                address2: get('tcs_consignee_address2') || undefined,
+                address3: get('tcs_consignee_address3') || undefined,
+                zip: get('tcs_consignee_zip') || undefined,
+                countrycode: get('tcs_consignee_countrycode') || 'PK',
+                countryname: get('tcs_consignee_countryname') || 'Pakistan',
+                citycode: get('tcs_consignee_citycode') || undefined,
+                cityname: get('tcs_consignee_cityname'),
+                email: get('tcs_consignee_email') || undefined,
+                areacode: get('tcs_consignee_areacode') || undefined,
+                areaname: get('tcs_consignee_areaname') || undefined,
+                blockcode: get('tcs_consignee_blockcode') || undefined,
+                blockname: get('tcs_consignee_blockname') || undefined,
+                lat: get('tcs_consignee_lat') || undefined,
+                lng: get('tcs_consignee_lng') || undefined,
+                landmark: get('tcs_consignee_landmark') || undefined,
+                mobile: get('tcs_consignee_mobile')
+              };
+
+              // Vendor (optional)
+              const vendorinfo = {
+                name: get('tcs_vendor_name') || undefined,
+                address1: get('tcs_vendor_address1') || undefined,
+                address2: get('tcs_vendor_address2') || undefined,
+                address3: get('tcs_vendor_address3') || undefined,
+                citycode: get('tcs_vendor_citycode') || undefined,
+                cityname: get('tcs_vendor_cityname') || undefined,
+                mobile: get('tcs_vendor_mobile') || undefined
+              };
+
+              // Shipment
+              const shipmentinfo = {
+                costcentercode: get('tcs_ship_costcentercode'),
+                referenceno: get('tcs_ship_referenceno') || undefined,
+                contentdesc: get('tcs_ship_contentdesc') || undefined,
+                servicecode: get('tcs_ship_servicecode'),
+                currency: get('tcs_ship_currency') || 'PKR',
+                codamount: Number(get('tcs_ship_codamount') || '0'),
+                weightinkg: Number(get('tcs_ship_weightinkg') || '0.5'),
+                pieces: Number(get('tcs_ship_pieces') || '1'),
+                fragile: (get('tcs_ship_fragile') || 'false') === 'true',
+                remarks: get('tcs_ship_remarks') || undefined
+              };
+
+              // SKU (optional single)
+              const skuDesc = get('tcs_sku_description');
+              const skuQty = get('tcs_sku_quantity');
+              const skuWeight = get('tcs_sku_weight');
+              const skuUom = get('tcs_sku_uom');
+              const skuUnitPrice = get('tcs_sku_unitprice');
+              const skus = [];
+              if (skuDesc || skuQty || skuWeight || skuUom || skuUnitPrice) {
+                skus.push({
+                  description: skuDesc || undefined,
+                  quantity: skuQty ? Number(skuQty) : undefined,
+                  weight: skuWeight ? Number(skuWeight) : undefined,
+                  uom: skuUom || undefined,
+                  unitprice: skuUnitPrice ? Number(skuUnitPrice) : undefined
+                });
+              }
+              if (skus.length) shipmentinfo.skus = skus;
+
+              // Validate requireds
+              const missing = [];
+              if (!shipperinfo.tcsaccount) missing.push('tcsaccount');
+              if (!shipperinfo.shippername) missing.push('shippername');
+              if (!shipperinfo.address1) missing.push('shipper.address1');
+              if (!shipperinfo.countrycode) missing.push('shipper.countrycode');
+              if (!shipperinfo.countryname) missing.push('shipper.countryname');
+              if (!shipperinfo.cityname) missing.push('shipper.cityname');
+              if (!shipperinfo.mobile) missing.push('shipper.mobile');
+              if (!consigneeinfo.firstname) missing.push('consignee.firstname');
+              if (!consigneeinfo.middlename) missing.push('consignee.middlename');
+              if (!consigneeinfo.address1) missing.push('consignee.address1');
+              if (!consigneeinfo.countrycode) missing.push('consignee.countrycode');
+              if (!consigneeinfo.countryname) missing.push('consignee.countryname');
+              if (!consigneeinfo.cityname) missing.push('consignee.cityname');
+              if (!consigneeinfo.mobile) missing.push('consignee.mobile');
+              if (!shipmentinfo.costcentercode) missing.push('costcentercode');
+              if (!shipmentinfo.servicecode) missing.push('servicecode');
+              if (!shipmentinfo.currency) missing.push('currency');
+              if (!(shipmentinfo.codamount >= 0)) missing.push('codamount');
+              if (!(shipmentinfo.weightinkg >= 0.5)) missing.push('weightinkg>=0.5');
+              if (!(shipmentinfo.pieces >= 1)) missing.push('pieces>=1');
+              if (missing.length) {
+                if (typeof showToast === 'function') showToast(`Please fill: ${missing.join(', ')}`, 'error');
+                return;
+              }
+
+              const body = { consignmentno, shipperinfo, consigneeinfo, vendorinfo, shipmentinfo };
+
+              try {
+                const res = await fetch('/api/tcs/booking', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(body)
+                });
+                const data = await res.json().catch(()=>({}));
+                if (res.ok) {
+                  if (typeof showToast === 'function') showToast('TCS order created successfully', 'success');
+                  try { console.log('TCS create-order success:', data); } catch(_) {}
+                  closeTcsModal();
+                  form.reset();
+                } else {
+                  const msg = data?.message || data?.statusMessage || data?.StatusMessage || 'Failed to create TCS order';
+                  if (typeof showToast === 'function') showToast(msg, 'error');
+                  console.error('TCS create-order error:', data);
+                  try {
+                    const safeBody = { ...body };
+                    console.debug('TCS payload sent:', safeBody);
+                  } catch(_){ /* noop */ }
+                }
+              } catch (err) {
+                console.error('TCS create-order network error:', err);
+                if (typeof showToast === 'function') showToast('Network error while creating TCS order', 'error');
               }
             });
           })();

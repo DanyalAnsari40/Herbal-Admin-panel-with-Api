@@ -1,5 +1,9 @@
 const express = require('express');
 require('dotenv').config()
+// Ensure fetch exists on Node <18
+if (typeof fetch === 'undefined') {
+  global.fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+}
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -968,105 +972,64 @@ app.get('/admin/finance', isAuthenticated, async (req, res) => {
   }
 });
 
-// 🚀finance secetion
-app.post('/admin/finance', isAuthenticated, async (req, res) => {
+// --- TCS Proxy Endpoints (secure tokens server-side) ---
+// City list proxy: our client POSTs; upstream is GET with query params
+app.post('/api/tcs/cities', isAuthenticated, async (req, res) => {
   try {
-    const { description, type, amount } = req.body;
-    if (!description || !type || !amount) {
-      return res.redirect('/admin/finance');
-    }
-
-    await Finance.create({
-      type,
-      description,
-      cost: type === 'expense' ? parseFloat(amount) : 0,
-      revenue: type === 'revenue' ? parseFloat(amount) : 0,
-      date: new Date()
+    const bearer = process.env.TCS_BEARER;
+    const payload = req.body && Object.keys(req.body).length ? req.body : { countrycode: ['PK'] };
+    const codes = Array.isArray(payload.countrycode)
+      ? payload.countrycode
+      : (payload.countrycode ? [payload.countrycode] : ['PK']);
+    const qs = new URLSearchParams();
+    codes.forEach(c => qs.append('countrycode', String(c)));
+    const url = `https://ociconnect.tcscourier.com/ecom/api/setup/citylistbycountry?${qs.toString()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(bearer ? { Authorization: `Bearer ${bearer}` } : {})
+      }
     });
-
-    res.redirect('/admin/finance');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return res.status(response.status).json({ message: data?.message || 'Failed to load TCS cities' });
+    }
+    res.json(data);
   } catch (err) {
-    console.error(err);
-    res.redirect('/admin/finance');
+    console.error('TCS cities proxy error:', err);
+    res.status(500).json({ message: 'Server error fetching TCS cities' });
   }
 });
-//! setting profile picture
-app.post('/admin/profile', isAuthenticated, upload.single('profilePic'), async (req, res) => {
-  const employee = await Employee.findById(req.session.user.id);
-  employee.displayName = req.body.displayName;
-  if (req.file) {
-    employee.profilePic = req.file.filename;
-  }
-  await employee.save();
-  req.session.user.displayName = employee.displayName;
-  req.session.user.profilePic = employee.profilePic;
-  res.redirect('/admin');
-});
-// !
-app.listen(3000, () => {
-  console.log('Server running at http://localhost:3000');
-});
 
-// Attendance page (GET)
-app.get('/admin/attendence', isAuthenticated, (req, res) => {
-  res.render('attendence', { message: null, user: req.session.user });
-});
-
-// Attendance submission (POST)
-app.post('/admin/attendence', isAuthenticated, async (req, res) => {
+// Booking proxy: POST -> POST
+app.post('/api/tcs/booking', isAuthenticated, async (req, res) => {
   try {
-    const { checkIn, checkOut } = req.body;
-    if (!checkIn || !checkOut) {
-      return res.render('attendence', { message: 'Both check-in and check-out are required.', user: req.session.user });
+    const bearer = process.env.TCS_BEARER;
+    const accessToken = process.env.TCS_ACCESS_TOKEN;
+    if (!accessToken) {
+      return res.status(500).json({ message: 'Missing TCS_ACCESS_TOKEN on server' });
     }
-    // Only one attendance per user per day
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const existing = await Attendance.findOne({ user: req.session.user.id, date: today });
-    if (existing) {
-      return res.render('attendence', { message: 'Attendance already marked for today.', user: req.session.user });
-    }
-    await Attendance.create({
-      user: req.session.user.id,
-      checkIn,
-      checkOut,
-      date: today
+    const body = { ...(req.body || {}) };
+    body.accesstoken = accessToken;
+    const response = await fetch('https://ociconnect.tcscourier.com/ecom/api/booking/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(bearer ? { Authorization: `Bearer ${bearer}` } : {})
+      },
+      body: JSON.stringify(body)
     });
-    res.render('attendence', { message: 'Attendance marked successfully!', user: req.session.user });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return res.status(response.status).json(data);
+    }
+    res.json(data);
   } catch (err) {
-    console.error(err);
-    res.render('attendence', { message: 'Error marking attendance.', user: req.session.user });
+    console.error('TCS booking proxy error:', err);
+    res.status(500).json({ message: 'Server error creating TCS booking' });
   }
 });
 
-// AJAX Check In
-app.post('/admin/attendence/checkin', isAuthenticated, async (req, res) => {
-  try {
-    const now = new Date();
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const employee = await Employee.findById(req.session.user.id);
-    let attendance = await Attendance.findOne({ user: employee._id, date: today });
-    if (attendance && attendance.checkIn) {
-      // Already checked in today
-      return res.json({ success: false, error: 'You have already checked in today.' });
-    }
-    if (!attendance) {
-      attendance = new Attendance({
-        user: employee._id,
-        email: employee.email,
-        displayName: employee.displayName,
-        date: today
-      });
-    }
-    attendance.checkIn = now.toISOString();
-    attendance.status = 'present';
-    await attendance.save();
-    res.json({ success: true, checkIn: now.toISOString() });
-  } catch (err) {
-    res.json({ success: false, error: 'Check-in failed.' });
-  }
-});
 // AJAX Check Out
 app.post('/admin/attendence/checkout', isAuthenticated, async (req, res) => {
   try {
@@ -1196,4 +1159,8 @@ app.get('/admin/attendence/today', isAuthenticated, async (req, res) => {
   }
 });
 
-
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
