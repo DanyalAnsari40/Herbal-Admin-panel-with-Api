@@ -1039,6 +1039,46 @@ app.post('/api/tcs/booking', isAuthenticated, async (req, res) => {
   }
 });
 
+// Attendance page
+app.get('/admin/attendence', isAuthenticated, async (req, res) => {
+  res.render('attendence', {
+    user: req.session.user,
+    currentRoute: 'attendence',
+    message: null
+  });
+});
+
+// AJAX Check In
+app.post('/admin/attendence/checkin', isAuthenticated, async (req, res) => {
+  try {
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let attendance = await Attendance.findOne({ user: req.session.user.id, date: today });
+    if (!attendance) {
+      attendance = new Attendance({
+        user: req.session.user.id,
+        email: req.session.user.email,
+        displayName: req.session.user.displayName,
+        checkIn: now.toISOString(),
+        status: 'present',
+        date: today
+      });
+      await attendance.save();
+    } else {
+      if (attendance.checkIn) {
+        return res.json({ success: false, error: 'You have already checked in today.' });
+      }
+      attendance.checkIn = now.toISOString();
+      attendance.status = 'present';
+      await attendance.save();
+    }
+    res.json({ success: true, checkIn: attendance.checkIn });
+  } catch (err) {
+    res.json({ success: false, error: 'Check-in failed.' });
+  }
+});
+
 // AJAX Check Out
 app.post('/admin/attendence/checkout', isAuthenticated, async (req, res) => {
   try {
