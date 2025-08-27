@@ -224,6 +224,21 @@
     </div>
   <% } %>
 
+  <!-- Live new orders notice (hidden by default) -->
+  <div id="newOrdersNotice" class="hidden mb-4 p-3 rounded-xl border bg-blue-50 text-blue-800 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <i class="fas fa-bell animate-pulse"></i>
+      <span id="newOrdersText">New orders have arrived.</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button id="refreshOrdersBtn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow">Refresh</button>
+      <button id="dismissNoticeBtn" class="px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Hidden meta for latest timestamp to avoid EJS inside <script> -->
+  <div id="ordersMeta" data-latest-ts="<%= (orders && orders.length) ? new Date(orders[0].createdAt).getTime() : 0 %>" class="hidden"></div>
+
   <!-- Heading + Filters in one row -->
  <!-- 🔍 Unified Filters -->
     <form method="GET" action="/admin/orders"
@@ -263,6 +278,22 @@
         </a>
       <% } %>
     </form>
+
+    <!-- Handle Tabs: All / Unhandled / Handled -->
+    <div class="w-full flex flex-wrap items-center space-x-2 mt-3">
+      <a href="?search=<%= search || '' %>&date=<%= selectedDate || '' %>&status=<%= selectedStatus || '' %>"
+         class="px-4 py-2 rounded-full font-medium shadow transition border <%= !selectedHandle ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100' %>">
+        All Orders
+      </a>
+      <a href="?search=<%= search || '' %>&date=<%= selectedDate || '' %>&status=<%= selectedStatus || '' %>&handle=Unhandled"
+         class="px-4 py-2 rounded-full font-medium shadow transition border <%= selectedHandle==='Unhandled' ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200' %>">
+        Unhandled
+      </a>
+      <a href="?search=<%= search || '' %>&date=<%= selectedDate || '' %>&status=<%= selectedStatus || '' %>&handle=Handled"
+         class="px-4 py-2 rounded-full font-medium shadow transition border <%= selectedHandle==='Handled' ? 'bg-green-600 text-white border-green-600' : 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' %>">
+        Handled
+      </a>
+    </div>
 
     <!-- Call Status Buttons -->
     <div class="w-full flex justify-start items-center space-x-2 mt-4 md:mt-2 mb-2">
@@ -307,7 +338,7 @@
             <th class="py-4 px-6 text-left"><i class="fas fa-toggle-on mr-2"></i>Handle</th>
           </tr>
         </thead>
-        <tbody class="text-gray-700">
+        <tbody id="ordersTbody" class="text-gray-700">
           <% orders.forEach((order, index) => {
             const isMyOrder = order.handledBy && order.handledBy._id?.toString() === user.id;
             const rowColor = order.isInProgress
@@ -457,7 +488,7 @@
           <span class="font-semibold text-white">Admin Panel</span>
           <i class="fas fa-shield-alt text-green-400"></i>
         </div>
-        <p class="text-sm">© 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
+        <p class="text-sm"> 2025 Admin Panel. All rights reserved. | Secure • Reliable • Efficient</p>
       </div>
     </footer>
   </div>
@@ -482,6 +513,114 @@ function toggleSidebar() {
   sidebar.classList.toggle('p-6');
   sidebar.classList.toggle('p-2');
 }
+
+// --- Live New Orders Polling ---
+(function() {
+  const notice = document.getElementById('newOrdersNotice');
+  const refreshBtn = document.getElementById('refreshOrdersBtn');
+  const dismissBtn = document.getElementById('dismissNoticeBtn');
+  const textEl = document.getElementById('newOrdersText');
+
+  if (!notice) return; // safety
+
+  // Baseline: latest order currently shown on page
+  const metaEl = document.getElementById('ordersMeta');
+  let acknowledgedLatest = 0;
+  if (metaEl) {
+    const raw = metaEl.getAttribute('data-latest-ts');
+    const n = Number(raw);
+    acknowledgedLatest = Number.isFinite(n) ? n : 0;
+  }
+
+  function show(count) {
+    // Auto-refresh behavior: fetch and inject, no full page reload
+    fetchAndInjectNew();
+  }
+
+  function hideAndAcknowledge(latest) {
+    notice.classList.add('hidden');
+    if (latest) {
+      const ts = Date.parse(latest);
+      if (!isNaN(ts)) acknowledgedLatest = ts;
+    }
+  }
+
+  async function fetchAndInjectNew() {
+    try {
+      const sinceIso = acknowledgedLatest ? new Date(acknowledgedLatest).toISOString() : '';
+      const qs = window.location.search;
+      const urlBase = '/admin/orders/new-fragment';
+      const url = `${urlBase}${qs ? qs + '&' : '?'}since=${encodeURIComponent(sinceIso)}`;
+      const resp = await fetch(url, { credentials: 'same-origin' });
+      const data = await resp.json().catch(() => ({}));
+      const tbody = document.getElementById('ordersTbody');
+      if (data && data.html && tbody) {
+        const tmp = document.createElement('tbody');
+        tmp.innerHTML = data.html.trim();
+        // Prepend new rows at the top (orders are desc by createdAt)
+        const rows = Array.from(tmp.children);
+        for (let i = rows.length - 1; i >= 0; i--) {
+          tbody.insertBefore(rows[i], tbody.firstChild);
+        }
+        if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+          window.Alpine.initTree(tbody);
+        }
+      }
+      // Acknowledge the latest from server
+      if (data && data.latest) {
+        const ts = Date.parse(data.latest);
+        if (!isNaN(ts)) acknowledgedLatest = ts;
+      }
+      // Keep notice hidden for auto-refresh UX
+      notice.classList.add('hidden');
+    } catch (_) {
+      // ignore errors, will retry on next poll
+    }
+  }
+
+  refreshBtn?.addEventListener('click', () => {
+    // Reload preserving current filters
+    window.location.reload();
+  });
+  dismissBtn?.addEventListener('click', async () => {
+    try {
+      // Fetch once to get current latest and then acknowledge
+      const resp = await fetch('/admin/orders/new-count', { credentials: 'same-origin' });
+      const data = await resp.json().catch(() => ({}));
+      hideAndAcknowledge(data.latest);
+    } catch (_) {
+      hideAndAcknowledge(null);
+    }
+  });
+
+  async function poll() {
+    try {
+      const url = acknowledgedLatest
+        ? `/admin/orders/new-count?since=${encodeURIComponent(new Date(acknowledgedLatest).toISOString())}`
+        : `/admin/orders/new-count`;
+      const resp = await fetch(url, { credentials: 'same-origin' });
+      const data = await resp.json().catch(() => ({}));
+
+      if (!acknowledgedLatest && data.latest) {
+        // initialize baseline silently
+        const ts = Date.parse(data.latest);
+        if (!isNaN(ts)) acknowledgedLatest = ts;
+        return;
+      }
+
+      if (data && typeof data.count === 'number' && data.count > 0) {
+        show(data.count);
+      }
+    } catch (err) {
+      // swallow errors
+    }
+  }
+
+  // Start polling every 10s
+  setInterval(poll, 10000);
+  // Initial quick poll after 2s
+  setTimeout(poll, 2000);
+})();
   </script>
 </body>
 

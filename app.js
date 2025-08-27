@@ -1159,6 +1159,124 @@ app.get('/admin/attendence/today', isAuthenticated, async (req, res) => {
   }
 });
 
+// Lightweight polling endpoint to check for new landing orders since a timestamp
+app.get('/admin/orders/new-count', isAuthenticated, hasPermission('orders'), async (req, res) => {
+  try {
+    const { since } = req.query;
+    if (!since) {
+      const latest = await LandingOrder.findOne({}, { createdAt: 1 }).sort({ createdAt: -1 }).lean();
+      return res.json({ count: 0, latest: latest?.createdAt || null });
+    }
+    const sinceDate = new Date(since);
+    if (isNaN(sinceDate.getTime())) {
+      return res.json({ count: 0, latest: null });
+    }
+    const [count, latest] = await Promise.all([
+      LandingOrder.countDocuments({ createdAt: { $gt: sinceDate } }),
+      LandingOrder.findOne({}, { createdAt: 1 }).sort({ createdAt: -1 }).lean()
+    ]);
+    res.json({ count, latest: latest?.createdAt || null });
+  } catch (err) {
+    console.error('new-count error:', err);
+    res.json({ count: 0, latest: null });
+  }
+});
+
+// Return HTML fragment for orders created after a timestamp, honoring filters
+app.get('/admin/orders/new-fragment', isAuthenticated, hasPermission('orders'), async (req, res) => {
+  try {
+    const { since, search = '', date = '', status = '', handle = '', mix = '' } = req.query;
+    let query = {};
+    // reuse same filters as /admin/orders
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0,0,0,0);
+      const end = new Date(date);
+      end.setHours(23,59,59,999);
+      query.createdAt = { $gte: start, $lte: end };
+    }
+    if (status) {
+      if (status === 'Pending') {
+        query.$or = query.$or || [];
+        query.$or.push(
+          { callStatus: { $exists: false } },
+          { callStatus: '' },
+          { callStatus: null },
+          { callStatus: 'Pending' }
+        );
+      } else if (["Answered", "Declined", "Cancelled", "Not-Attend", "Power Off"].includes(status)) {
+        query.callStatus = status;
+      }
+    }
+    if (handle === 'Unhandled') {
+      query.$or = [
+        { isInProgress: false },
+        { isInProgress: { $exists: false } },
+        { isInProgress: null }
+      ];
+    } else if (handle === 'Handled') {
+      query.isInProgress = true;
+    }
+    let mixPairs = [];
+    const isMix = mix === '1';
+    if (isMix) {
+      const baseOrders = await LandingOrder.find(query, { name: 1, phone: 1 });
+      const seen = new Set();
+      mixPairs = baseOrders
+        .map(o => `${o.name}||${o.phone}`)
+        .filter(pair => {
+          if (seen.has(pair)) return false;
+          seen.add(pair);
+          return true;
+        })
+        .map(pair => {
+          const [n,p] = pair.split('||');
+          return { name: n, phone: p };
+        });
+      if (mixPairs.length > 0) {
+        query.$or = mixPairs.map(({ name, phone }) => ({ name, phone }));
+      } else {
+        query._id = null; // no results
+      }
+    }
+
+    // since filter
+    if (since) {
+      const sinceDate = new Date(since);
+      if (!isNaN(sinceDate.getTime())) {
+        query.createdAt = query.createdAt || {};
+        query.createdAt.$gt = sinceDate;
+      }
+    }
+
+    const orders = await LandingOrder.find(query)
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('handledBy', 'displayName email')
+      .lean();
+
+    const latest = await LandingOrder.findOne({}, { createdAt: 1 }).sort({ createdAt: -1 }).lean();
+
+    // Render partial rows to HTML string
+    res.render('partials/orderRows', { orders, user: req.session.user }, (err, html) => {
+      if (err) {
+        console.error('Render partial error:', err);
+        return res.json({ html: '', latest: latest?.createdAt || null });
+      }
+      res.json({ html, latest: latest?.createdAt || null });
+    });
+  } catch (err) {
+    console.error('new-fragment error:', err);
+    res.json({ html: '', latest: null });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
