@@ -329,6 +329,8 @@ app.get('/admin/orders', isAuthenticated, hasPermission('orders'), async (req, r
       ];
     } else if (req.query.handle === "Handled") {
       query.isInProgress = true;
+      // Show only orders handled by the current user (all roles)
+      query.handledBy = req.session.user.id;
     }
 
     // Mix Order logic
@@ -412,7 +414,14 @@ app.post('/admin/orders/toggle-lock/:id', isAuthenticated, hasPermission('orders
       order.handledBy = null;
     }
     await order.save();
-    res.redirect('/admin/orders');
+    const next = req.body.nextHandle;
+    let redirectUrl = '/admin/orders';
+    if (next === 'Handled') {
+      redirectUrl += '?handle=Handled';
+    } else if (next === 'Unhandled') {
+      redirectUrl += '?handle=Unhandled';
+    }
+    res.redirect(redirectUrl);
   } catch (err) {
     console.error(err);
     res.redirect('/admin/orders');
@@ -1222,6 +1231,8 @@ app.get('/admin/orders/new-fragment', isAuthenticated, hasPermission('orders'), 
       ];
     } else if (handle === 'Handled') {
       query.isInProgress = true;
+      // Show only orders handled by the current user (all roles)
+      query.handledBy = req.session.user.id;
     }
     let mixPairs = [];
     const isMix = mix === '1';
